@@ -67,7 +67,7 @@
                                     <StackPanel Grid.Column="2">
                                         <TextBox Text="{Binding FilePath}" Margin="5" Grid.Column="1" VerticalAlignment="Center" />
                                         <StackPanel Orientation="Horizontal">
-                                            <TextBox Text="{Binding IP}" Margin="5" Grid.Column="1" Width="300" VerticalAlignment="Center" />
+                                            <TextBox Text="{Binding IpAddress}" Margin="5" Grid.Column="1" Width="300" VerticalAlignment="Center" />
                                             <TextBlock Text="Port:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                             <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
                                                  Margin="5" Grid.Column="1" Width="50" VerticalAlignment="Center"
