@@ -12,10 +12,11 @@ namespace UniversalTelemetryReplay.Objects
     {
         public enum ThemeTypes
         {
-            Light,
             Dark,
+            Light,
+            Modern,
             Navy,
-            Old,
+            Traditional
         }
 
         public static ResourceDictionary ThemeDictionary
@@ -34,10 +35,11 @@ namespace UniversalTelemetryReplay.Objects
             string themeName = theme switch
             {
                 ThemeTypes.Dark => "Dark",
+                ThemeTypes.Light => "Light",
                 ThemeTypes.Navy => "Navy",
-                ThemeTypes.Old => "Old",
+                ThemeTypes.Traditional => "Traditional",
                 // Intentional fall through 
-                _ => "Light",
+                _ => "Modern",
             };
 
             try

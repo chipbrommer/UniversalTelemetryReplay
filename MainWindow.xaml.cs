@@ -13,8 +13,11 @@ namespace UniversalTelemetryReplay
         private readonly string companyFolder = "InnovativeConcepts";
         private readonly string applicationFolder = "UniversalTelemetryReplay";
         private readonly string settingsFileName = @"\settings.json";
+        private readonly string configurationsFileName = @"\configurations.json";
         internal static SettingsFile<Settings>? settingsFile;
         internal static Settings? settings;
+        internal static ConfigurationManager<MessageConfiguration>? configManager;
+        internal static List<MessageConfiguration>? configurations;
 
         public MainWindow()
         {
@@ -41,6 +44,11 @@ namespace UniversalTelemetryReplay
 
             // Update things based on settings.
             ThemeController.SetTheme(settings.theme);
+
+            // Attempt to load configurations
+            string configFilePath = programDataPath + configurationsFileName;
+            configManager = new ConfigurationManager<MessageConfiguration>(configFilePath);
+            configurations = configManager.Load();
         }
     }
 }
