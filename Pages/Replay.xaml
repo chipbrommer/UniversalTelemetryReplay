@@ -65,22 +65,22 @@
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="2">
-                                        <TextBox Text="{Binding FilePath}" Margin="5" Grid.Column="1" VerticalAlignment="Center" />
+                                        <TextBox Text="{Binding FilePath}" Margin="5" Grid.Column="1" VerticalAlignment="Center" IsReadOnly="True"/>
                                         <StackPanel Orientation="Horizontal">
                                             <TextBox Text="{Binding IpAddress}" Margin="5" Grid.Column="1" Width="300" VerticalAlignment="Center" />
                                             <TextBlock Text="Port:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                             <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
                                                  Margin="5" Grid.Column="1" Width="50" VerticalAlignment="Center"
-                                                 PreviewTextInput="TextBox_PreviewTextInput" MaxLength="5" TextChanged="TextBox_TextChanged"/>
+                                                 PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged"/>
                                         </StackPanel>
                                     </StackPanel>
 
-                                    <!-- Remove Button -->
-                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                    <!-- Buttons -->
+                                    <StackPanel Grid.Column="3" HorizontalAlignment="Center">
                                         <Button x:Name="BrowseButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Top"
                                             HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Browse" Click="LogBrowse_Click"/>
-                                        <Button x:Name="ParseButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Center"
-                                            HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Parse" Click="LogParse_Click" IsEnabled="False"/>
+                                        <Button x:Name="UpdateButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Update" Click="LogUpdate_Click" Visibility="Hidden"/>
                                         <Button x:Name="RemoveButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource PrimaryRedColor}" VerticalAlignment="Bottom"
                                             HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Remove" Click="LogRemove_Click"/>
                                     </StackPanel>
