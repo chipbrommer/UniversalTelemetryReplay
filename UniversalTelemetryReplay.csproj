@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <None Remove="Resources\utr_logo.ico" />
+    <None Remove="Resources\utr_logo.png" />
+    <None Remove="Resources\utr_logo_transparent.png" />
     <None Remove="Resources\utr_rd_logo.ico" />
   </ItemGroup>
 
@@ -18,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Resources\utr_logo.ico" />
+    <Resource Include="Resources\utr_logo_transparent.png" />
     <Resource Include="Resources\utr_rd_logo.ico" />
   </ItemGroup>
 

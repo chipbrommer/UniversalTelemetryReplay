@@ -3,5 +3,32 @@
     <!-- Background Colors -->
     <SolidColorBrush x:Key="PrimaryBackgroundColor" Color="#3D5A8A"/>
     <SolidColorBrush x:Key="SecondaryBackgroundColor" Color="#E2EDFF"/>
-    
+
+    <!-- Primary Colors -->
+    <SolidColorBrush x:Key="PrimaryBlueColor" Color="#3772FF"/>
+    <SolidColorBrush x:Key="PrimaryRedColor" Color="#E63535"/>
+    <SolidColorBrush x:Key="PrimaryGreenColor" Color="#05A660"/>
+    <SolidColorBrush x:Key="PrimaryOrangeColor" Color="#E67A00"/>
+    <SolidColorBrush x:Key="PrimaryYellowColor" Color="#E6B800"/>
+    <SolidColorBrush x:Key="PrimaryTealColor" Color="#00B7C4"/>
+    <SolidColorBrush x:Key="PrimaryBlackColor" Color="#0E1A32"/>
+    <SolidColorBrush x:Key="PrimaryGrayColor" Color="#808385"/>
+    <SolidColorBrush x:Key="PrimaryWhiteColor" Color="#FFFFFF"/>
+
+    <!-- Text Colors -->
+    <SolidColorBrush x:Key="TextPrimaryColor" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="TextSecondaryColor" Color="#1d2335"/>
+    <SolidColorBrush x:Key="TextThirdColor" Color="#8A94A6"/>
+    <SolidColorBrush x:Key="TextFourthColor" Color="#4B5D78"/>
+
+    <!-- Button Colors -->
+    <SolidColorBrush x:Key="ButtonDefaultColor" Color="LightGray"/>
+    <SolidColorBrush x:Key="ButtonHoverColor" Color="#87898A"/>
+    <SolidColorBrush x:Key="ButtonPressColor" Color="#3751FF"/>
+    <SolidColorBrush x:Key="ButtonTextColor" Color="#0E1A32"/>
+
+    <!-- Other -->
+    <SolidColorBrush x:Key="PrimaryAccentColor" Color="#3772FF"/>
+    <SolidColorBrush x:Key="CheckBoxCheckedColor" Color="#3772FF"/>
+
 </ResourceDictionary>

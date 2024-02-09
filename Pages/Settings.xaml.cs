@@ -1,17 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using UniversalTelemetryReplay.Objects;
 
 namespace UniversalTelemetryReplay.Pages
 {
@@ -23,6 +12,35 @@ namespace UniversalTelemetryReplay.Pages
         public Settings()
         {
             InitializeComponent();
+        }
+
+        public void SetThemeSelection(ThemeController.ThemeTypes value)
+        {
+            switch (value)
+            {
+                case ThemeController.ThemeTypes.Dark:           DarkTheme.IsChecked = true;         break;
+                case ThemeController.ThemeTypes.Light:          LightTheme.IsChecked = true;        break;
+                case ThemeController.ThemeTypes.Modern:         ModernTheme.IsChecked = true;       break;
+                case ThemeController.ThemeTypes.Navy:           NavyTheme.IsChecked = true;         break;
+                case ThemeController.ThemeTypes.Traditional:    TraditionalTheme.IsChecked = true;  break;
+            }
+        }
+
+        private void Theme_Changed(object sender, RoutedEventArgs e)
+        {
+            if (sender is RadioButton radioButton && radioButton.IsChecked == true && radioButton.Tag != null)
+            {
+                string selectedTheme = radioButton.Tag.ToString();
+                // Apply the selected theme based on the value of selectedTheme
+                switch (selectedTheme)
+                {
+                    case "Dark":        ThemeController.SetTheme(ThemeController.ThemeTypes.Dark);          break;
+                    case "Light":       ThemeController.SetTheme(ThemeController.ThemeTypes.Light);         break;
+                    case "Modern":      ThemeController.SetTheme(ThemeController.ThemeTypes.Modern);        break;
+                    case "Navy":        ThemeController.SetTheme(ThemeController.ThemeTypes.Navy);          break;
+                    case "Traditional": ThemeController.SetTheme(ThemeController.ThemeTypes.Traditional);   break;
+                }
+            }
         }
     }
 }

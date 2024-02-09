@@ -1,46 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
+using System.IO;
 
 namespace UniversalTelemetryReplay.Objects
 {
+    /// <summary>Default constructor</summary>
+    /// <param name="file_path">Full path to the settings file</param>
     public class ConfigurationManager<T> where T : class, new()
     {
-        private List<T>? data;       // Config file template list
-        private string file_path;   // File path to the configurations file
+        private List<T> configurations;                // Config file template list
+        private readonly string file_path;              // File path to the configurations file
 
-        /// <summary>Default constructor</summary>
-        /// <param name="file_path">Full path to the settings file</param>
         public ConfigurationManager(string file_path)
         {
             this.file_path = file_path;
+            configurations = [];
         }
 
-        public List<T>? Load()
+        public bool Load()
         {
             try
             {
                 if (!File.Exists(file_path))
                 {
-                    data = new List<T>();
+                    return Save(); // Save the empty list to create the file
                 }
                 else
                 {
-                    data = JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(file_path));
+                    configurations = JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(file_path));
+                    return true;
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading configurations: {ex.Message}");
-                return null;
+                return false;
             }
-
-            return data;
         }
 
-        public bool Save(List<T> configurations)
+        public bool Save()
         {
             try
             {
@@ -51,16 +48,35 @@ namespace UniversalTelemetryReplay.Objects
                 }
 
                 File.WriteAllText(file_path, JsonConvert.SerializeObject(configurations, Formatting.Indented));
-
-                data = JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(file_path));
+                return true;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error saving configurations: {ex.Message}");
                 return false;
             }
+        }
 
-            return true;
+        public List<T> GetData() 
+        { 
+            return configurations;
+        }
+
+        public void AddConfiguration(T configuration)
+        {
+            configurations.Add(configuration);
+        }
+
+        public bool RemoveConfiguration(int index)
+        {
+            if (configurations != null && index >= 0 && index < configurations.Count)
+            {
+                configurations.RemoveAt(index);
+                return true;
+            }
+
+            return false;
         }
     }
+
 }

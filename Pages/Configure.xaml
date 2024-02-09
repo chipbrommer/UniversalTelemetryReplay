@@ -1,0 +1,56 @@
+﻿<Page x:Class="UniversalTelemetryReplay.Pages.Configure"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:local="clr-namespace:UniversalTelemetryReplay.Pages"
+      mc:Ignorable="d"
+      Title="Configure"
+      Style="{StaticResource ContentPageStyle}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Grid: Data Table Style View -->
+        <DataGrid x:Name="ConfigurationsDataGrid" Grid.Row="0" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="#" Binding="{Binding RowIndex}" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="Sync Bytes" Binding="{Binding SyncBytes}" />
+                <DataGridTextColumn Header="Message Size" Binding="{Binding MessageSize}" />
+                <DataGridTextColumn Header="Timestamp Byte Size" Binding="{Binding TimestampSize}" />
+                <DataGridTextColumn Header="Timestamp Byte Offset" Binding="{Binding TimestampByteOffset}" />
+                <DataGridTextColumn Header="End Bytes" Binding="{Binding EndBytes}" />
+                <DataGridTemplateColumn Header="Actions">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button Content="Delete" Visibility="Collapsed" MouseEnter="DeleteButton_MouseEnter" MouseLeave="DeleteButton_MouseLeave" Click="DeleteButton_Click" />
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Bottom Grid: Input Fields -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="6*" />
+                <ColumnDefinition Width="4*" />
+            </Grid.ColumnDefinitions>
+
+            <StackPanel Grid.Column="0" Margin="5">
+                <TextBox x:Name="NameTextBox" Margin="0,0,0,5" Text="Name" Style="{DynamicResource PlaceholderTextBox}" />
+                <TextBox x:Name="SyncBytesTextBox" Margin="0,0,0,5" Text="Sync Bytes" Style="{DynamicResource PlaceholderTextBox}" />
+                <TextBox x:Name="MessageSizeTextBox" Margin="0,0,0,5" Text="Message Size" Style="{DynamicResource PlaceholderTextBox}" />
+                <TextBox x:Name="TimestampLocationTextBox" Margin="0,0,0,5" Text="Timestamp Location" Style="{DynamicResource PlaceholderTextBox}" />
+                <TextBox x:Name="EndBytesTextBox" Margin="0,0,0,5" Text="End Bytes" Style="{DynamicResource PlaceholderTextBox}" />
+            </StackPanel>
+
+            <Button Grid.Column="1" Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Add" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddConfiguration_Click" />
+        </Grid>
+    </Grid>
+
+</Page>

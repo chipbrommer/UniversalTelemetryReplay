@@ -8,6 +8,71 @@
       Title="Settings"
       Style="{StaticResource ContentPageStyle}">
     <Grid>
-        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0" CornerRadius="10" Margin="5">
+            <StackPanel Margin="5">
+                <TextBlock FontSize="16" FontWeight="Medium" Text="Theme" Foreground="{DynamicResource TextSecondaryColor}"/>
+                <RadioButton
+                            x:Name="DarkTheme"
+                            Margin="0,8,0,0"
+                            Content="Dark"
+                            Tag="Dark"
+                            GroupName="themeSelect"
+                            IsChecked="False"
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>
+                <RadioButton
+                            x:Name="LightTheme"
+                            Margin="0,8,0,0"
+                            Content="Light"
+                            Tag="Light"
+                            GroupName="themeSelect"
+                            IsChecked="False" 
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>           
+                <RadioButton
+                            x:Name="ModernTheme"
+                            Margin="0,8,0,0"
+                            Content="Modern"
+                            Tag="Modern"
+                            GroupName="themeSelect"
+                            IsChecked="False" 
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>
+                <RadioButton
+                            x:Name="NavyTheme"
+                            Margin="0,8,0,0"
+                            Content="Navy"
+                            Tag="Navy"
+                            GroupName="themeSelect"
+                            IsChecked="False" 
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>
+                <RadioButton
+                            x:Name="TraditionalTheme"
+                            Margin="0,8,0,0"
+                            Content="Traditional"
+                            Tag="Traditional"
+                            GroupName="themeSelect"
+                            IsChecked="False" 
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>
+            </StackPanel>
+        </Border>
     </Grid>
 </Page>

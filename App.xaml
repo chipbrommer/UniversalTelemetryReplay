@@ -17,6 +17,8 @@
 
                 <!-- Styles -->
                 <ResourceDictionary Source="Styles/ContentPage.xaml"/>
+                <ResourceDictionary Source="Styles/ModernButton.xaml"/>
+                <ResourceDictionary Source="Styles/PlaceholderTextBox.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
