@@ -4,6 +4,20 @@
              xmlns:local="clr-namespace:UniversalTelemetryReplay"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- Themes -->
+                <!--<ResourceDictionary Source="Themes/Dark.xaml"/>-->
+                <!--<ResourceDictionary Source="Themes/Light.xaml"/>-->
+                <ResourceDictionary Source="Themes/Modern.xaml"/>
+                <!--<ResourceDictionary Source="Themes/Navy.xaml"/>-->
+                <!--<ResourceDictionary Source="Themes/Traditional.xaml"/>-->
+
+                <!-- Assets -->
+
+                <!-- Styles -->
+                <ResourceDictionary Source="Styles/ContentPage.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

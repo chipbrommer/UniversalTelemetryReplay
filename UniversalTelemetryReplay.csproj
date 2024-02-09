@@ -9,13 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Resources\" />
-    <Folder Include="Styles\" />
-    <Folder Include="Pages\" />
+    <None Remove="Resources\utr_logo.ico" />
+    <None Remove="Resources\utr_rd_logo.ico" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\utr_logo.ico" />
+    <Resource Include="Resources\utr_rd_logo.ico" />
   </ItemGroup>
 
 </Project>

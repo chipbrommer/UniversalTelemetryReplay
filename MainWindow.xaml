@@ -5,8 +5,43 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UniversalTelemetryReplay"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Universal Telemetry Replay" 
+        Height="650" 
+        MinHeight="350"
+        Width="800"
+        MinWidth="600"
+        Background="{DynamicResource PrimaryBackgroundColor}" WindowStartupLocation="CenterScreen">
+    <Window.Icon>
+        <BitmapImage UriSource="pack://application:,,,/UniversalTelemetryReplay;component/Resources/utr_rd_logo.ico"/>
+    </Window.Icon>
     <Grid>
+        <Border CornerRadius="10" Margin="5">
+            <Grid>
+                <!-- Main Grid Rows -->
+                <Grid.RowDefinitions>
+                    <!-- Row 0 - Menu Items, 10% of window height -->
+                    <RowDefinition Height="50" MinHeight="50"/>
+                    <!-- Row 1 - Main Content View, 70% of window height -->
+                    <RowDefinition Height="*" MinHeight="150"/>
+                    <!-- Row 2 - Controls, 25% of window height -->
+                    <RowDefinition Height="25*" MinHeight="100" MaxHeight="140"/>
+                </Grid.RowDefinitions>
 
+                <!-- Row 0 - Menu Items -->
+                <Grid Grid.Row="0" Margin="5,0">
+
+                </Grid>
+
+                <!-- Row 1 - Main Content View -->
+                <Border Grid.Row="1" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
+                    <Frame x:Name="ContentArea" NavigationUIVisibility="Hidden"/>
+                </Border>
+
+                <!-- Row 2 - Controls -->
+                <Border Grid.Row="2" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
+                    
+                </Border>
+            </Grid>
+        </Border>
     </Grid>
 </Window>
