@@ -30,7 +30,7 @@ namespace UniversalTelemetryReplay.Objects
                    SyncBytes.SequenceEqual(other.SyncBytes) &&
                    MessageSize == other.MessageSize &&
                    TimestampSize == other.TimestampSize &&
-                   TimestampLocation == other.TimestampLocation &&
+                   TimestampByteOffset == other.TimestampByteOffset &&
                    EndBytes.SequenceEqual(other.EndBytes);
         }
 
@@ -43,7 +43,7 @@ namespace UniversalTelemetryReplay.Objects
                 hash = hash * 23 + (SyncBytes != null ? SyncBytes.GetHashCode() : 0);
                 hash = hash * 23 + MessageSize.GetHashCode();
                 hash = hash * 23 + TimestampSize.GetHashCode();
-                hash = hash * 23 + TimestampLocation.GetHashCode();
+                hash = hash * 23 + TimestampByteOffset.GetHashCode();
                 hash = hash * 23 + (EndBytes != null ? EndBytes.GetHashCode() : 0);
                 return hash;
             }

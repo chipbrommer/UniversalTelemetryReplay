@@ -75,7 +75,8 @@ namespace UniversalTelemetryReplay
             configManager = new ConfigurationManager<MessageConfiguration>(configFilePath);
             configManager.Load();
 
-            
+            // Set default view
+            ChangeView(View.Replay);
         }
 
         /// <summary>Changes the view content</summary>

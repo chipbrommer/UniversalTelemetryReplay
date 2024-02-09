@@ -8,7 +8,7 @@
       Title="Configure"
       Style="{StaticResource ContentPageStyle}">
 
-    <Grid>
+    <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
@@ -27,7 +27,8 @@
                 <DataGridTemplateColumn Header="Actions">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button Content="Delete" Visibility="Collapsed" MouseEnter="DeleteButton_MouseEnter" MouseLeave="DeleteButton_MouseLeave" Click="DeleteButton_Click" />
+                            <Button Content="Delete" Visibility="Visible" Click="DeleteButton_Click" 
+                            DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
                         </DataTemplate>
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>

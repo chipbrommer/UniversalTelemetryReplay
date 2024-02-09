@@ -33,7 +33,7 @@ namespace UniversalTelemetryReplay.Pages
                 Name = name,
                 SyncBytes = syncBytes,
                 MessageSize = messageSize,
-                TimestampLocation = timestampLocation,
+                TimestampByteOffset = timestampLocation,
                 EndBytes = endBytes
             };
 
@@ -49,6 +49,20 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        private void DeleteButton_MouseEnter(object sender, MouseEventArgs e)
+        {
+            // Show the delete button when the mouse enters the cell
+            Button deleteButton = sender as Button;
+            deleteButton.Visibility = Visibility.Visible;
+        }
+
+        private void DeleteButton_MouseLeave(object sender, MouseEventArgs e)
+        {
+            // Hide the delete button when the mouse leaves the cell
+            Button deleteButton = sender as Button;
+            deleteButton.Visibility = Visibility.Collapsed;
+        }
+
         private void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             // Retrieve the configuration associated with the clicked row
@@ -56,7 +70,7 @@ namespace UniversalTelemetryReplay.Pages
             MessageConfiguration configuration = deleteButton.DataContext as MessageConfiguration;
 
             // Get the index of the configuration
-            int index = MainWindow.configManager.GetData().IndexOf(configuration);
+            int index = configuration.RowIndex;
 
             // Remove the configuration from the ConfigurationManager
             if (MainWindow.configManager != null && index != -1)
@@ -112,20 +126,6 @@ namespace UniversalTelemetryReplay.Pages
                 // Set the ItemsSource of DataGrid to the configurations data
                 ConfigurationsDataGrid.ItemsSource = configurations;
             }
-        }
-
-        private void DeleteButton_MouseEnter(object sender, MouseEventArgs e)
-        {
-            // Show the delete button when the mouse enters the cell
-            Button deleteButton = sender as Button;
-            deleteButton.Visibility = Visibility.Visible;
-        }
-
-        private void DeleteButton_MouseLeave(object sender, MouseEventArgs e)
-        {
-            // Hide the delete button when the mouse leaves the cell
-            Button deleteButton = sender as Button;
-            deleteButton.Visibility = Visibility.Collapsed;
         }
     }
 }

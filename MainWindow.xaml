@@ -44,7 +44,9 @@
 
                 <!-- Row 1 - Main Content View -->
                 <Border Grid.Row="1" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
-                    <Frame x:Name="ContentArea" NavigationUIVisibility="Hidden"/>
+                    <Frame x:Name="ContentArea" NavigationUIVisibility="Hidden"
+                        Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
+                        Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"/>
                 </Border>
 
                 <!-- Row 2 - Controls -->
