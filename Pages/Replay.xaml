@@ -7,7 +7,94 @@
       mc:Ignorable="d"
       Title="Replay"
       Style="{StaticResource ContentPageStyle}">
-    <Grid>
-        
+    
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Top Grid: Title -->
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" Style="{DynamicResource ViewTitleTextBlock}" Text="Replay" HorizontalAlignment="Left" Foreground="{DynamicResource TextSecondaryColor}"/>
+            <TextBlock Grid.Column="1" Style="{DynamicResource ViewTitleTextBlock}" x:Name="TotalItemsTextBlock" Foreground="{DynamicResource TextSecondaryColor}"
+               Text="{Binding DataContext.Count, RelativeSource={RelativeSource AncestorType={x:Type Page}}, StringFormat='Total Items: {0}'}" 
+               HorizontalAlignment="Right"/>
+        </Grid>
+
+
+        <!-- Middle Grid: Add Replay Item -->
+        <Grid Grid.Row="1">
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border BorderBrush="Gray" BorderThickness="1" Margin="0,5,2,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Configuration" Margin="5,5,5,0" HorizontalAlignment="Center" />
+                                        <Border Background="{DynamicResource PrimaryGrayColor}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
+                                            <Label Content="{Binding Configuration}" Foreground="{DynamicResource TextPrimaryColor}" 
+                                                   HorizontalAlignment="Center"
+                                                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                        </Border>
+                                        <TextBlock Text="Status" Margin="5,0,5,0" HorizontalAlignment="Center" />
+                                        <Border Background="{DynamicResource PrimaryGrayColor}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
+                                            <Label Content="{Binding Status}" Foreground="{DynamicResource TextPrimaryColor}" 
+                                                   HorizontalAlignment="Center"
+                                                   HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Filepath:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                        <TextBlock Text="IP:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                    </StackPanel>
+
+                                    <StackPanel Grid.Column="2">
+                                        <TextBox Text="{Binding FilePath}" Margin="5" Grid.Column="1" VerticalAlignment="Center" />
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBox Text="{Binding IP}" Margin="5" Grid.Column="1" Width="300" VerticalAlignment="Center" />
+                                            <TextBlock Text="Port:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                            <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
+                                                 Margin="5" Grid.Column="1" Width="50" VerticalAlignment="Center"
+                                                 PreviewTextInput="TextBox_PreviewTextInput" MaxLength="5" TextChanged="TextBox_TextChanged"/>
+                                        </StackPanel>
+                                    </StackPanel>
+
+                                    <!-- Remove Button -->
+                                    <StackPanel Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <Button x:Name="BrowseButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Top"
+                                            HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Browse" Click="LogBrowse_Click"/>
+                                        <Button x:Name="ParseButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Center"
+                                            HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Parse" Click="LogParse_Click" IsEnabled="False"/>
+                                        <Button x:Name="RemoveButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource PrimaryRedColor}" VerticalAlignment="Bottom"
+                                            HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Remove" Click="LogRemove_Click"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Bottom Grid: Add Replay Item -->
+        <Grid Grid.Row="2">
+            <Button x:Name="AddLogItemButton" Content="Add Log Item" Click="AddLogItem_Click" />
+        </Grid>
     </Grid>
 </Page>

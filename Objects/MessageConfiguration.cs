@@ -10,11 +10,15 @@ namespace UniversalTelemetryReplay.Objects
     {
         public int RowIndex { get; set; }
         public string Name { get; set; }
-        public List<byte> SyncBytes { get; set; }
+        public byte SyncByte1 { get; set; }
+        public byte SyncByte2 { get; set; }
+        public byte SyncByte3 { get; set; }
+        public byte SyncByte4 { get; set; }
         public uint MessageSize { get; set; }
         public uint TimestampSize { get; set; }
         public uint TimestampByteOffset { get; set; }
-        public List<byte> EndBytes { get; set; }
+        public byte EndByte1 { get; set; }
+        public byte EndByte2 { get; set; }
 
         public override bool Equals(object? obj)
         {
@@ -27,26 +31,31 @@ namespace UniversalTelemetryReplay.Objects
 
             // Check if all properties are equal
             return Name == other.Name &&
-                   SyncBytes.SequenceEqual(other.SyncBytes) &&
+                   SyncByte1 == other.SyncByte1 &&
+                   SyncByte2 == other.SyncByte2 &&
+                   SyncByte3 == other.SyncByte3 &&
+                   SyncByte4 == other.SyncByte4 &&
                    MessageSize == other.MessageSize &&
                    TimestampSize == other.TimestampSize &&
                    TimestampByteOffset == other.TimestampByteOffset &&
-                   EndBytes.SequenceEqual(other.EndBytes);
+                   EndByte1 == other.EndByte1 &&
+                   EndByte2 == other.EndByte2;
         }
 
         public override int GetHashCode()
         {
-            unchecked 
-            {
-                int hash = 17;
-                hash = hash * 23 + (Name != null ? Name.GetHashCode() : 0);
-                hash = hash * 23 + (SyncBytes != null ? SyncBytes.GetHashCode() : 0);
-                hash = hash * 23 + MessageSize.GetHashCode();
-                hash = hash * 23 + TimestampSize.GetHashCode();
-                hash = hash * 23 + TimestampByteOffset.GetHashCode();
-                hash = hash * 23 + (EndBytes != null ? EndBytes.GetHashCode() : 0);
-                return hash;
-            }
+            HashCode hash = new();
+            hash.Add(Name);
+            hash.Add(SyncByte1);
+            hash.Add(SyncByte2);
+            hash.Add(SyncByte3);
+            hash.Add(SyncByte4);
+            hash.Add(MessageSize);
+            hash.Add(TimestampSize);
+            hash.Add(TimestampByteOffset);
+            hash.Add(EndByte1);
+            hash.Add(EndByte2);
+            return hash.ToHashCode();
         }
     }
 }

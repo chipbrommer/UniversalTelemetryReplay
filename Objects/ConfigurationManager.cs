@@ -1,20 +1,15 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.IO;
 
 namespace UniversalTelemetryReplay.Objects
 {
     /// <summary>Default constructor</summary>
     /// <param name="file_path">Full path to the settings file</param>
-    public class ConfigurationManager<T> where T : class, new()
+    public class ConfigurationManager<T>(string file_path) where T : class, new()
     {
-        private List<T> configurations;                // Config file template list
-        private readonly string file_path;              // File path to the configurations file
-
-        public ConfigurationManager(string file_path)
-        {
-            this.file_path = file_path;
-            configurations = [];
-        }
+        private ObservableCollection<T> configurations = [];   // Config file template list
+        private readonly string file_path = file_path;                  // File path to the configurations file
 
         public bool Load()
         {
@@ -26,13 +21,43 @@ namespace UniversalTelemetryReplay.Objects
                 }
                 else
                 {
-                    configurations = JsonConvert.DeserializeObject<List<T>>(File.ReadAllText(file_path));
-                    return true;
+                    string fileContent = File.ReadAllText(file_path);
+                    if (string.IsNullOrEmpty(fileContent))
+                    {
+                        return Save(); // Save the empty list to create the file
+                    }
+                    else
+                    {
+                        configurations = JsonConvert.DeserializeObject<ObservableCollection<T>>(fileContent);
+                        return true;
+                    }
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading configurations: {ex.Message}");
+                return false;
+            }
+        }
+
+        public bool LoadConfigFromFile(string filepath)
+        {
+            try
+            {
+                if (File.Exists(filepath))
+                {
+                    string json = File.ReadAllText(filepath);
+                    configurations = JsonConvert.DeserializeObject<ObservableCollection<T>>(json);
+                    return Save();
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading configurations from file: {ex.Message}");
                 return false;
             }
         }
@@ -57,8 +82,8 @@ namespace UniversalTelemetryReplay.Objects
             }
         }
 
-        public List<T> GetData() 
-        { 
+        public ObservableCollection<T> GetData()
+        {
             return configurations;
         }
 

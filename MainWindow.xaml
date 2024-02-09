@@ -7,9 +7,9 @@
         mc:Ignorable="d"
         Title="Universal Telemetry Replay" 
         Height="650" 
-        MinHeight="400"
+        MinHeight="550"
         Width="800"
-        MinWidth="600"
+        MinWidth="800"
         Background="{DynamicResource PrimaryBackgroundColor}" 
         WindowStartupLocation="CenterScreen">
     <Window.Icon>
@@ -35,18 +35,18 @@
                         <ColumnDefinition Width="200"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
-                    <Button x:Name="HomeViewButton" Style="{DynamicResource ModernButton}" Grid.Column="0" VerticalAlignment="Center" 
+                    <Button x:Name="SettingsViewButton" Style="{DynamicResource ModernButton}" Grid.Column="0" VerticalAlignment="Center" 
                             HorizontalAlignment="Left" Width="140" Height="25" Margin="5,0" Content="Settings" Click="Settings_Click"/>
                     <Image Grid.Column="1" Source="pack://application:,,,/UniversalTelemetryReplay;component/Resources/utr_logo_transparent.png"/>
-                    <Button x:Name="DownloadLayoutsButton" Style="{DynamicResource ModernButton}" Grid.Column="2" VerticalAlignment="Center" 
+                    <Button x:Name="ConfigurationsViewButton" Style="{DynamicResource ModernButton}" Grid.Column="2" VerticalAlignment="Center" 
                             HorizontalAlignment="Right" Width="140" Height="25" Margin="5,0" Content="Message Configurations" Click="Configurations_Click"/>
                 </Grid>
 
                 <!-- Row 1 - Main Content View -->
                 <Border Grid.Row="1" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
                     <Frame x:Name="ContentArea" NavigationUIVisibility="Hidden"
-                        Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"
-                        Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Border}}}"/>
+                        Width="{Binding ActualWidth, RelativeSource={RelativeSource AncestorType={x:Type Border}}, Converter={StaticResource WidthConverter}}"
+                        Height="{Binding ActualHeight, RelativeSource={RelativeSource AncestorType={x:Type Border}}, Converter={StaticResource HeightConverter}}"/>
                 </Border>
 
                 <!-- Row 2 - Controls -->

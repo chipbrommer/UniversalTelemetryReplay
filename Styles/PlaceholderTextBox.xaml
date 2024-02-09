@@ -1,11 +1,32 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="PlaceholderTextBox" TargetType="TextBox">
-        <Style.Triggers>
-            <Trigger Property="Text" Value="">
-                <Setter Property="Foreground" Value="{DynamicResource PrimaryGrayColor}"/>
-                <Setter Property="FontStyle" Value="Italic"/>
-            </Trigger>
-        </Style.Triggers>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid>
+                            <TextBlock x:Name="PlaceholderText" 
+                                    Text="{TemplateBinding Tag}"
+                                    Visibility="Collapsed"
+                                    Margin="5,0"
+                                    Foreground="Gray"
+                                    IsHitTestVisible="False"/>
+                            <ScrollViewer x:Name="PART_ContentHost"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsFocused" Value="True">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Collapsed"/>
+                        </Trigger>
+                        <Trigger Property="Text" Value="">
+                            <Setter TargetName="PlaceholderText" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 </ResourceDictionary>

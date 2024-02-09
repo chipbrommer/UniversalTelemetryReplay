@@ -10,47 +10,87 @@
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!-- Top Grid: Data Table Style View -->
-        <DataGrid x:Name="ConfigurationsDataGrid" Grid.Row="0" AutoGenerateColumns="False">
+        <!-- Top Grid: Title -->
+        <Grid Grid.Row="0">
+            <TextBlock Style="{DynamicResource ViewTitleTextBlock}" Text="Configutations"/>
+        </Grid>
+
+        <!-- Middle Grid: Data Table Style View -->
+        <DataGrid x:Name="ConfigurationsDataGrid" Grid.Row="1" AutoGenerateColumns="False" 
+                  SelectionChanged="ConfigurationsDataGrid_SelectionChanged" IsReadOnly="True">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding RowIndex}" />
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
-                <DataGridTextColumn Header="Sync Bytes" Binding="{Binding SyncBytes}" />
+                <DataGridTextColumn Header="Sync Byte 1" Binding="{Binding SyncByte1}" />
+                <DataGridTextColumn Header="Sync Byte 2" Binding="{Binding SyncByte2}" />
+                <DataGridTextColumn Header="Sync Byte 3" Binding="{Binding SyncByte3}" />
+                <DataGridTextColumn Header="Sync Byte 4" Binding="{Binding SyncByte4}" />
                 <DataGridTextColumn Header="Message Size" Binding="{Binding MessageSize}" />
                 <DataGridTextColumn Header="Timestamp Byte Size" Binding="{Binding TimestampSize}" />
                 <DataGridTextColumn Header="Timestamp Byte Offset" Binding="{Binding TimestampByteOffset}" />
-                <DataGridTextColumn Header="End Bytes" Binding="{Binding EndBytes}" />
-                <DataGridTemplateColumn Header="Actions">
-                    <DataGridTemplateColumn.CellTemplate>
-                        <DataTemplate>
-                            <Button Content="Delete" Visibility="Visible" Click="DeleteButton_Click" 
-                            DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=DataGrid}}" />
-                        </DataTemplate>
-                    </DataGridTemplateColumn.CellTemplate>
-                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="End Byte 1" Binding="{Binding EndByte1}" />
+                <DataGridTextColumn Header="End Byte 2" Binding="{Binding EndByte2}" />
             </DataGrid.Columns>
         </DataGrid>
 
         <!-- Bottom Grid: Input Fields -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="6*" />
                 <ColumnDefinition Width="4*" />
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0" Margin="5">
-                <TextBox x:Name="NameTextBox" Margin="0,0,0,5" Text="Name" Style="{DynamicResource PlaceholderTextBox}" />
-                <TextBox x:Name="SyncBytesTextBox" Margin="0,0,0,5" Text="Sync Bytes" Style="{DynamicResource PlaceholderTextBox}" />
-                <TextBox x:Name="MessageSizeTextBox" Margin="0,0,0,5" Text="Message Size" Style="{DynamicResource PlaceholderTextBox}" />
-                <TextBox x:Name="TimestampLocationTextBox" Margin="0,0,0,5" Text="Timestamp Location" Style="{DynamicResource PlaceholderTextBox}" />
-                <TextBox x:Name="EndBytesTextBox" Margin="0,0,0,5" Text="End Bytes" Style="{DynamicResource PlaceholderTextBox}" />
+                <TextBox x:Name="NameTextBox" Margin="0,0,0,5" Tag="Configuration Name" Style="{DynamicResource PlaceholderTextBox}" />
+                <UniformGrid Rows="1" Columns="4" Margin="0,0,0,5">
+                    <TextBox x:Name="SyncByte1TextBox" Margin="0,0,2,0" Tag="Sync Byte 1" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="SyncByte2TextBox" Margin="2,0,2,0" Tag="Sync Byte 2" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="SyncByte3TextBox" Margin="2,0,2,0" Tag="Sync Byte 3" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="SyncByte4TextBox" Margin="2,0,0,0" Tag="Sync Byte 4" Style="{DynamicResource PlaceholderTextBox}" />
+                </UniformGrid>
+                <UniformGrid Rows="1" Columns="3" Margin="0,0,0,5">
+                    <TextBox x:Name="MessageSizeTextBox" Margin="0,0,2,0" Tag="Message Size" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="TimestampSizeTextBox" Margin="2,0,2,0" Tag="Timestamp Size in Bytes" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="TimestampOffsetTextBox" Margin="2,0,0,0" Tag="Timestamp Offset" Style="{DynamicResource PlaceholderTextBox}" />
+                </UniformGrid>
+                <UniformGrid Rows="1" Columns="2">
+                    <TextBox x:Name="EndByte1TextBox" Margin="0,0,2,0" Tag="End Byte 1" Style="{DynamicResource PlaceholderTextBox}" />
+                    <TextBox x:Name="EndByte2TextBox" Margin="2,0,0,0" Tag="End Byte 2" Style="{DynamicResource PlaceholderTextBox}" />
+                </UniformGrid>
             </StackPanel>
 
-            <Button Grid.Column="1" Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Add" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddConfiguration_Click" />
+            <!--<UniformGrid Grid.Column="1" Margin="5">
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Reset Fields" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResetFields_Click" />
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Remove Config" HorizontalAlignment="Center" VerticalAlignment="Center" Click="DeleteConfiguration_Click" />
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Delete Configs" HorizontalAlignment="Center" VerticalAlignment="Center" Click="DeleteAllConfiguration_Click" />
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Add Config" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddConfiguration_Click" />
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Load Config File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LoadConfiguration_Click" />
+                <Button Style="{DynamicResource ModernButton}" Width="100" Height="25" Content="Export Config File" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ExportConfiguration_Click" />
+            </UniformGrid>-->
+
+            <Grid Grid.Column="1" Margin="5">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <Button Grid.Row="0" Grid.Column="0" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Reset Fields" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ResetFields_Click" />
+                <Button Grid.Row="0" Grid.Column="1" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Remove Config" HorizontalAlignment="Center" VerticalAlignment="Center" Click="DeleteConfiguration_Click" />
+                <Button Grid.Row="1" Grid.Column="0" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Delete Configs" HorizontalAlignment="Center" VerticalAlignment="Center" Click="DeleteAllConfiguration_Click" />
+                <Button Grid.Row="1" Grid.Column="1" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Add Config" HorizontalAlignment="Center" VerticalAlignment="Center" Click="AddConfiguration_Click" />
+                <Button Grid.Row="2" Grid.Column="0" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Load Configs" HorizontalAlignment="Center" VerticalAlignment="Center" Click="LoadConfiguration_Click" />
+                <Button Grid.Row="2" Grid.Column="1" Style="{DynamicResource ModernButton}" Width="120" Height="25" Margin="5" Content="Export Configs" HorizontalAlignment="Center" VerticalAlignment="Center" Click="ExportConfiguration_Click" />
+            </Grid>
         </Grid>
     </Grid>
 

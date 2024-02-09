@@ -36,7 +36,7 @@ namespace UniversalTelemetryReplay
         {
             InitializeComponent();
 
-            configureView = new(this);
+            configureView = new();
             replayView = new();
             settingsView = new();
 
@@ -87,15 +87,21 @@ namespace UniversalTelemetryReplay
             {
                 case View.Configure:    
                     ContentArea.Content = configureView;    
-                    configureView.UpdateConfigurationsDataGrid();  
+                    configureView.UpdateConfigurationsDataGrid();
+                    ConfigurationsViewButton.Content = "Replay Home";
+                    SettingsViewButton.Content = "Settings";
                     currentView = view; 
                     break;
                 case View.Replay:       
-                    ContentArea.Content = replayView;       
+                    ContentArea.Content = replayView;
+                    ConfigurationsViewButton.Content = "Message Configurations";
+                    SettingsViewButton.Content = "Settings";
                     currentView = view; 
                     break;
                 case View.Settings:     
-                    ContentArea.Content = settingsView;     
+                    ContentArea.Content = settingsView;
+                    SettingsViewButton.Content = "Replay Home";
+                    ConfigurationsViewButton.Content = "Message Configurations";
                     currentView = view; 
                     break;
                 default: 
@@ -103,13 +109,6 @@ namespace UniversalTelemetryReplay
             }
 
             currentView = view;
-        }
-
-        /// <summary>Shows an error message</summary>
-        /// <param name="message"> -[in]- message to be displayed</param>
-        private static void ShowErrorMessage(string message)
-        {
-            MessageBox.Show(message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         private void Configurations_Click(object sender, RoutedEventArgs e)
