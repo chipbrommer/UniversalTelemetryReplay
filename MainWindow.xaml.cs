@@ -1,7 +1,12 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.ObjectModel;
+using System.Configuration;
+using System.IO;
 using System.Reflection;
+using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using UniversalTelemetryReplay.Controls;
 using UniversalTelemetryReplay.Objects;
 
@@ -19,7 +24,7 @@ namespace UniversalTelemetryReplay
         private readonly string configurationsFileName = @"\configurations.json";
         internal static SettingsFile<Settings>? settingsFile;
         internal static ConfigurationManager<MessageConfiguration>? configManager;
-        private double selectedPlaybackSpeed = 0;
+        private readonly double selectedPlaybackSpeed = 0;
 
         /// Views
         private View currentView;
@@ -43,7 +48,7 @@ namespace UniversalTelemetryReplay
             Stopped,
         }
 
-        List<string> SpeedOptions =
+        readonly List<string> SpeedOptions =
         [
             "0.25x",
             "0.5x",
@@ -59,7 +64,7 @@ namespace UniversalTelemetryReplay
             InitializeComponent();
 
             configureView = new();
-            replayView = new();
+            replayView = new(this);
             settingsView = new();
 
             // Get the version information of the assembly
@@ -158,13 +163,21 @@ namespace UniversalTelemetryReplay
 
         private void ActionButton_Click(object sender, RoutedEventArgs e)
         {
-            Button clickedButton = sender as Button;
-
-            if (clickedButton != null)
+            if (sender is Button clickedButton)
             {
                 if (clickedButton == LoadButton)
                 {
-                    UpdatePlaybackControls(PlayBackStatus.Loaded);
+                    Task.Run(() =>
+                    {
+                        if (ParseSelectedLogs())
+                        {
+                            Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Loaded));
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() => MessageBox.Show("Failed to match log file(s) to a configuration.", "Error", MessageBoxButton.OK, MessageBoxImage.Error));
+                        }
+                    });
                 }
                 else if (clickedButton == RestartButton)
                 {
@@ -205,9 +218,7 @@ namespace UniversalTelemetryReplay
             }
             else
             {
-                ModernToggleButton toggleButton = sender as ModernToggleButton;
-
-                if(toggleButton != null && settingsFile != null && settingsFile.data != null) 
+                if (sender is ModernToggleButton toggleButton && settingsFile != null && settingsFile.data != null)
                 {
                     settingsFile.data.ConcurrentPlaybackEnabled = toggleButton.IsChecked ?? false;
                     settingsFile.Save();
@@ -302,5 +313,95 @@ namespace UniversalTelemetryReplay
             }
         }
 
+        private bool ParseSelectedLogs()
+        {
+            // Preventive check
+            if (configManager == null || configManager.GetData() == null) return false;
+
+            // Success counter
+            int success = 0;
+
+            // Attempt the parse the logs
+            foreach(LogItem log in replayView.logItems) 
+            {
+                log.Status = "Parsing";
+
+                // If no path was selected, skip this log. 
+                if (log.pathSelected == false)
+                {
+                    log.Status = "Skipped";
+                    log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    continue;
+                }
+
+                if (!ParseConfigurations(log))
+                {
+                    // If here, no matching config was found for this log
+                    log.Status = "Parsed";
+                    log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+                    log.Configuration = "Not Found";
+                    log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+                }
+                else success++;
+            }
+
+            if(success <= 0) { return false; }
+            else return true;
+        }
+
+        private bool ParseConfigurations(LogItem log)
+        {
+            ObservableCollection<MessageConfiguration> configs = configManager.GetData();
+
+            foreach (MessageConfiguration config in configs)
+            {
+                // load entries from the telemetry file
+                if (File.Exists(log.FilePath))
+                {
+                    using FileStream fileStream = File.Open(log.FilePath, FileMode.Open);
+                    const int MaxParse = 0;
+                    int numRead = 0;
+                    int bytesInBuffer = 0;
+                    byte[] buffer = new byte[config.MessageSize];
+
+                    while ((numRead = fileStream.Read(buffer, bytesInBuffer, buffer.Length - bytesInBuffer)) > 0)
+                    {
+                        bytesInBuffer += numRead;
+
+                        if (bytesInBuffer < config.MessageSize) continue;
+
+                        // loop through data to find a message that matches a configuration
+                        int i = 0;
+                        for (i = 0; i <= bytesInBuffer - config.MessageSize; i++)
+                        {
+                            if (buffer[i + 0] == config.SyncByte1 &&
+                                buffer[i + 1] == config.SyncByte2 &&
+                                (config.SyncByte3 == 0 || buffer[i + 2] == config.SyncByte3) &&
+                                (config.SyncByte4 == 0 || buffer[i + 3] == config.SyncByte4) &&
+                                buffer[i + config.MessageSize - 2] == config.EndByte1 &&
+                                (config.EndByte2 == 0 || buffer[i + config.MessageSize - 1] == config.EndByte2))
+                            {
+                                log.Status = "Parsed";
+                                log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                                log.Configuration = config.Name;
+                                log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public void UpdateControls(bool visible)
+        {
+            if(visible)
+                ControlsGrid.Visibility = Visibility.Visible;
+            else
+                ControlsGrid.Visibility = Visibility.Hidden;
+        }
     }
 }

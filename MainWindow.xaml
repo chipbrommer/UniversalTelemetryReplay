@@ -52,7 +52,7 @@
 
                 <!-- Row 2 - Controls -->
                 <Border Grid.Row="2" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
-                    <Grid>
+                    <Grid x:Name="ControlsGrid" Visibility="Hidden">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="*"/>
@@ -80,7 +80,7 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            
+
                             <Grid Grid.Column="0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
@@ -108,21 +108,6 @@
                                     </StackPanel>
                                 </Grid>
                             </Grid>
-
-                            <!--<StackPanel Grid.Column="0">
-                                <StackPanel Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
-                                    <TextBlock Grid.Column="0" Text="Playback Style" VerticalAlignment="Center" HorizontalAlignment="Center" 
-                                    TextAlignment="Center" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                </StackPanel>
-                                <StackPanel Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Left" Margin="25,0,0,5">
-                                    <TextBlock Grid.Column="0" Text="Concurrent" VerticalAlignment="Center" HorizontalAlignment="Left" 
-                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                    <controls:ModernToggleButton Grid.Row="9" Grid.Column="1" Width="45" ButtonWidth="20" 
-                                        Style="{StaticResource ModernToggleButton}" HorizontalAlignment="Center" IsChecked="{Binding TimeSyncPlayback}"/>
-                                    <TextBlock Grid.Column="0" Text="Time Sync" VerticalAlignment="Center" HorizontalAlignment="Right" 
-                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                </StackPanel>
-                            </StackPanel>-->
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal">
                                 <Button x:Name="LoadButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"

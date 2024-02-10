@@ -17,11 +17,13 @@ namespace UniversalTelemetryReplay.Pages
     public partial class Replay : Page
     {
         public readonly ObservableCollection<LogItem> logItems;
+        readonly MainWindow mw;
 
-        public Replay()
+        public Replay(MainWindow main)
         {
             InitializeComponent();
             logItems = [];
+            mw = main;
 
             // Set DataContext to logItems for binding
             DataContext = logItems;
@@ -30,6 +32,7 @@ namespace UniversalTelemetryReplay.Pages
         private void AddLogItem_Click(object sender, RoutedEventArgs e)
         {
             // Preventive check
+            if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
             if (logItems.Count > MainWindow.settingsFile.data.MaxReplays) return;
 
             // Add a new log item to the logItems collection
@@ -37,10 +40,12 @@ namespace UniversalTelemetryReplay.Pages
             {
                 Id = LogItem.NEXT_ID++,
                 Configuration = "Unknown",
+                ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"],
                 FilePath = "Not Selected",
                 Status = "Not Parsed",
+                StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"],
                 IpAddress = "127.0.0.1",
-                Port = 5000,
+                Port = 5700,
             });
 
             UpdateAddButton();
@@ -59,7 +64,7 @@ namespace UniversalTelemetryReplay.Pages
 
         private void PortTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
+            if (sender is not TextBox textBox) return;
 
             // Limit the length of the input to 5 numbers
             if (textBox.Text.Length > 5)
@@ -73,24 +78,22 @@ namespace UniversalTelemetryReplay.Pages
             if (textBox.Parent is StackPanel parent)
             {
                 // Find the "Update" button by its name
-                Button updateButton = parent.FindName("UpdateButton") as Button;
+                if (parent.FindName("UpdateButton") is not Button updateButton) return;
 
                 // Enable/disable the "Update" button based on the Port TextBox's text
                 // hide it if the port is empty to prevent the update. 
                 if (!string.IsNullOrEmpty(textBox.Text))
-                {
                     updateButton.Visibility = Visibility.Visible;
-                }
                 else
-                {
                     updateButton.Visibility = Visibility.Hidden;
-                }
             }
 
         }
 
         private void UpdateAddButton()
         {
+            if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
+
             // If we are at maximum items, disable button. 
             if (logItems.Count >= MainWindow.settingsFile.data.MaxReplays)
             {
@@ -104,12 +107,17 @@ namespace UniversalTelemetryReplay.Pages
                 AddLogItemButton.Content = "Add Log to Replay";
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["TextSecondaryColor"];
             }
+
+            if (logItems.Count > 0)
+                mw.UpdateControls(true);
+            else
+                mw.UpdateControls(false);
         }
 
         private void LogBrowse_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button browseButton = sender as Button;
+            Button? browseButton = sender as Button;
 
             // Get the data context of the button, which is the item in the list
             if (browseButton.DataContext is LogItem logItem)
@@ -131,6 +139,7 @@ namespace UniversalTelemetryReplay.Pages
                     // Find the index of the logItem in the ObservableCollection and update it
                     int index = logItems.IndexOf(logItem);
                     logItems[index].FilePath = selectedFilePath;
+                    logItems[index].pathSelected = true;
                 }
             }
         }

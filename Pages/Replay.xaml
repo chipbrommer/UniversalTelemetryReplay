@@ -46,13 +46,13 @@
 
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="Configuration" Margin="5,5,5,0" HorizontalAlignment="Center" />
-                                        <Border Background="{DynamicResource PrimaryGrayColor}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
+                                        <Border Background="{Binding ConfigBG}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
                                             <Label Content="{Binding Configuration}" Foreground="{DynamicResource TextPrimaryColor}" 
                                                    HorizontalAlignment="Center"
                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                                         </Border>
                                         <TextBlock Text="Status" Margin="5,0,5,0" HorizontalAlignment="Center" />
-                                        <Border Background="{DynamicResource PrimaryGrayColor}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
+                                        <Border Background="{Binding StatusBG}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
                                             <Label Content="{Binding Status}" Foreground="{DynamicResource TextPrimaryColor}" 
                                                    HorizontalAlignment="Center"
                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
