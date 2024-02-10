@@ -94,7 +94,7 @@
 
         <!-- Bottom Grid: Add Replay Item -->
         <Grid Grid.Row="2">
-            <Button x:Name="AddLogItemButton" Content="Add Log Item" Click="AddLogItem_Click" />
+            <Button x:Name="AddLogItemButton" Content="Add Log to Replay" Click="AddLogItem_Click" />
         </Grid>
     </Grid>
 </Page>

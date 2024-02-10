@@ -21,6 +21,7 @@
                 <!-- Styles -->
                 <ResourceDictionary Source="Styles/ContentPage.xaml"/>
                 <ResourceDictionary Source="Styles/ModernButton.xaml"/>
+                <ResourceDictionary Source="Styles/ModernToggleButton.xaml"/>
                 <ResourceDictionary Source="Styles/PlaceholderTextBox.xaml"/>
                 <ResourceDictionary Source="Styles/ViewTitleTextBlock.xaml"/>
             </ResourceDictionary.MergedDictionaries>

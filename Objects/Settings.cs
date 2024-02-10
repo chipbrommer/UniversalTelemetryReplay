@@ -5,5 +5,7 @@
     {
         public ThemeController.ThemeTypes Theme = ThemeController.ThemeTypes.Modern;
         public int MaxReplays = 5;
+        public string PlaybackSpeed = "";
+        public bool ConcurrentPlaybackEnabled = false;
     }
 }

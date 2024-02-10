@@ -16,7 +16,7 @@ namespace UniversalTelemetryReplay.Pages
     /// </summary>
     public partial class Replay : Page
     {
-        private readonly ObservableCollection<LogItem> logItems;
+        public readonly ObservableCollection<LogItem> logItems;
 
         public Replay()
         {
@@ -30,7 +30,7 @@ namespace UniversalTelemetryReplay.Pages
         private void AddLogItem_Click(object sender, RoutedEventArgs e)
         {
             // Preventive check
-            if (logItems.Count > MainWindow.settings.MaxReplays) return;
+            if (logItems.Count > MainWindow.settingsFile.data.MaxReplays) return;
 
             // Add a new log item to the logItems collection
             logItems.Add(new LogItem()
@@ -70,8 +70,7 @@ namespace UniversalTelemetryReplay.Pages
             }
 
             // Find the parent of the TextBox
-            StackPanel parent = textBox.Parent as StackPanel;
-            if (parent != null)
+            if (textBox.Parent is StackPanel parent)
             {
                 // Find the "Update" button by its name
                 Button updateButton = parent.FindName("UpdateButton") as Button;
@@ -93,7 +92,7 @@ namespace UniversalTelemetryReplay.Pages
         private void UpdateAddButton()
         {
             // If we are at maximum items, disable button. 
-            if (logItems.Count >= MainWindow.settings.MaxReplays)
+            if (logItems.Count >= MainWindow.settingsFile.data.MaxReplays)
             {
                 AddLogItemButton.IsEnabled = false;
                 AddLogItemButton.Content = "Max Replay Items Reached";
@@ -102,7 +101,7 @@ namespace UniversalTelemetryReplay.Pages
             else
             {
                 AddLogItemButton.IsEnabled = true;
-                AddLogItemButton.Content = "Add Log Item";
+                AddLogItemButton.Content = "Add Log to Replay";
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["TextSecondaryColor"];
             }
         }
@@ -116,10 +115,12 @@ namespace UniversalTelemetryReplay.Pages
             if (browseButton.DataContext is LogItem logItem)
             {
                 // Create OpenFileDialog
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "Digital Files (*.dig)|*.dig|Binary Files (*.bin)|*.bin";
-                openFileDialog.FilterIndex = 1;
-                openFileDialog.Multiselect = false;
+                OpenFileDialog openFileDialog = new()
+                {
+                    Filter = "Digital Files (*.dig)|*.dig|Binary Files (*.bin)|*.bin",
+                    FilterIndex = 1,
+                    Multiselect = false
+                };
 
                 // Show OpenFileDialog
                 if (openFileDialog.ShowDialog() == true)
@@ -149,8 +150,7 @@ namespace UniversalTelemetryReplay.Pages
             }
 
             // Find the parent of the Button
-            StackPanel parent = button.Parent as StackPanel;
-            if (parent != null)
+            if (button.Parent is StackPanel parent)
             {
                 // Find the "Update" button by its name and hide it
                 Button updateButton = parent.FindName("UpdateButton") as Button;
@@ -161,12 +161,12 @@ namespace UniversalTelemetryReplay.Pages
         private void LogRemove_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button removeButton = sender as Button;
+            Button? removeButton = sender as Button;
 
             // Get the data context of the button, which is the item in the list
             if (removeButton.DataContext != null)
             {
-                var itemToRemove = removeButton.DataContext as LogItem;
+                LogItem itemToRemove = removeButton.DataContext as LogItem;
 
                 // Assuming your ItemsSource is an ObservableCollection, you can remove the item
                 if (logItems is ObservableCollection<LogItem> observableCollection)

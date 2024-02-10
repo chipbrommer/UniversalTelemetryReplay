@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:UniversalTelemetryReplay"
+        xmlns:controls="clr-namespace:UniversalTelemetryReplay.Controls"
         mc:Ignorable="d"
         Title="Universal Telemetry Replay" 
         Height="650" 
@@ -36,10 +37,10 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
                     <Button x:Name="SettingsViewButton" Style="{DynamicResource ModernButton}" Grid.Column="0" VerticalAlignment="Center" 
-                            HorizontalAlignment="Left" Width="140" Height="25" Margin="5,0" Content="Settings" Click="Settings_Click"/>
+                            HorizontalAlignment="Left" Width="140" Height="25" Margin="5,0" Content="Settings" Click="MenuButton_Click"/>
                     <Image Grid.Column="1" Source="pack://application:,,,/UniversalTelemetryReplay;component/Resources/utr_logo_transparent.png"/>
                     <Button x:Name="ConfigurationsViewButton" Style="{DynamicResource ModernButton}" Grid.Column="2" VerticalAlignment="Center" 
-                            HorizontalAlignment="Right" Width="140" Height="25" Margin="5,0" Content="Message Configurations" Click="Configurations_Click"/>
+                            HorizontalAlignment="Right" Width="140" Height="25" Margin="5,0" Content="Message Configurations" Click="MenuButton_Click"/>
                 </Grid>
 
                 <!-- Row 1 - Main Content View -->
@@ -51,7 +52,103 @@
 
                 <!-- Row 2 - Controls -->
                 <Border Grid.Row="2" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
-                    
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="0.0" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                TextAlignment="Center" Margin="5,0,5,0" Width="40" Foreground="{DynamicResource TextSecondaryColor}"/>
+                            <Slider Grid.Column="1"
+                                Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"
+                                IsSnapToTickEnabled="True" TickPlacement="BottomRight" Margin="5,0,5,0"/>
+                            <TextBlock Grid.Column="2" Text="0.0" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                TextAlignment="Center" Margin="5,0,5,0" Width="40" Foreground="{DynamicResource TextSecondaryColor}"/>
+                        </Grid>
+
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <Grid Grid.Column="0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <Grid Grid.Column="0" Margin="0,0,0,5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="*"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <Grid Grid.Row="0">
+                                        <TextBlock Text="Playback Style" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                        TextAlignment="Center" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                    </Grid>
+
+                                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                        <TextBlock Text="Concurrent" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                        <controls:ModernToggleButton x:Name="PlaybackStyleButton" Grid.Row="9" Width="44" ButtonWidth="18" 
+                                        Style="{StaticResource ModernToggleButton}" HorizontalAlignment="Center" Click="ActionButton_Click"/>
+                                        <TextBlock Text="Time Sync" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+
+                            <!--<StackPanel Grid.Column="0">
+                                <StackPanel Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,5">
+                                    <TextBlock Grid.Column="0" Text="Playback Style" VerticalAlignment="Center" HorizontalAlignment="Center" 
+                                    TextAlignment="Center" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="0"  Orientation="Horizontal" HorizontalAlignment="Left" Margin="25,0,0,5">
+                                    <TextBlock Grid.Column="0" Text="Concurrent" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                    <controls:ModernToggleButton Grid.Row="9" Grid.Column="1" Width="45" ButtonWidth="20" 
+                                        Style="{StaticResource ModernToggleButton}" HorizontalAlignment="Center" IsChecked="{Binding TimeSyncPlayback}"/>
+                                    <TextBlock Grid.Column="0" Text="Time Sync" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                        TextAlignment="Center" Margin="5,0,5,0" Width="80" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                </StackPanel>
+                            </StackPanel>-->
+
+                            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                                <Button x:Name="LoadButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Load" Click="ActionButton_Click"/>
+                                <Button x:Name="RestartButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Restart" Click="ActionButton_Click" Visibility="Collapsed"/>
+                                <Button x:Name="PlayButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Play" Click="ActionButton_Click" Visibility="Collapsed"/>
+                                <Button x:Name="PauseButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Pause" Click="ActionButton_Click" Visibility="Collapsed"/>
+                                <Button x:Name="ResumeButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Resume" Click="ActionButton_Click" Visibility="Collapsed"/>
+                                <Button x:Name="StopButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Stop" Click="ActionButton_Click" Visibility="Collapsed"/>
+                                <Button x:Name="ResetButton" Style="{DynamicResource ModernButton}" VerticalAlignment="Center"
+                                    HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Reset" Click="ActionButton_Click" Visibility="Collapsed"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,20,5">
+                                <TextBlock Grid.Column="0" Text="Playback Speed:" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                    TextAlignment="Center" Margin="5,0,5,0" Width="100" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                <ComboBox x:Name="PlaybackSpeedComboBox" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="5" Width="100"
+                                          SelectionChanged="PlaybackSpeedComboBox_SelectionChanged"/>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>

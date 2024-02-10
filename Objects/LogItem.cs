@@ -7,10 +7,10 @@ namespace UniversalTelemetryReplay.Objects
         public static int NEXT_ID = 0;
 
         private int _id;
-        private string _configuration;
-        private string _status;
-        private string _filePath;
-        private string _ipAddress;
+        private string _configuration = "";
+        private string _status = "";
+        private string _filePath = "";
+        private string _ipAddress = "";
         private int _port;
 
         public int Id

@@ -44,6 +44,12 @@ namespace UniversalTelemetryReplay.Objects
 
             try
             {
+                if (MainWindow.settingsFile != null && MainWindow.settingsFile.data != null)
+                {
+                    MainWindow.settingsFile.data.Theme = theme;
+                    MainWindow.settingsFile.Save();
+                }
+
                 if (!string.IsNullOrEmpty(themeName))
                     ChangeTheme(new Uri($"Themes/{themeName}.xaml", UriKind.Relative));
             }
