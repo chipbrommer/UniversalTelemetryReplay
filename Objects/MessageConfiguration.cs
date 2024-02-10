@@ -17,6 +17,7 @@ namespace UniversalTelemetryReplay.Objects
         public uint MessageSize { get; set; }
         public uint TimestampSize { get; set; }
         public uint TimestampByteOffset { get; set; }
+        public double TimestampScaling { get; set; }
         public byte EndByte1 { get; set; }
         public byte EndByte2 { get; set; }
 
@@ -38,6 +39,7 @@ namespace UniversalTelemetryReplay.Objects
                    MessageSize == other.MessageSize &&
                    TimestampSize == other.TimestampSize &&
                    TimestampByteOffset == other.TimestampByteOffset &&
+                   TimestampScaling == other.TimestampScaling &&
                    EndByte1 == other.EndByte1 &&
                    EndByte2 == other.EndByte2;
         }
@@ -53,6 +55,7 @@ namespace UniversalTelemetryReplay.Objects
             hash.Add(MessageSize);
             hash.Add(TimestampSize);
             hash.Add(TimestampByteOffset);
+            hash.Add(TimestampScaling);
             hash.Add(EndByte1);
             hash.Add(EndByte2);
             return hash.ToHashCode();

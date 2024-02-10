@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Configuration;
+using System.Data;
 using System.IO;
 using System.Reflection;
 using System.Security.Cryptography.X509Certificates;
@@ -46,6 +47,15 @@ namespace UniversalTelemetryReplay
             Started,
             Paused,
             Stopped,
+        }
+
+        public enum ParseStatus
+        {
+            Unparsed,
+            Parsing,
+            Found,
+            NotFound,
+            Skipped,
         }
 
         readonly List<string> SpeedOptions =
@@ -288,7 +298,6 @@ namespace UniversalTelemetryReplay
             // Check if an item is selected
             if (PlaybackSpeedComboBox.SelectedItem != null)
             {
-
                 SetPlaybackSpeed(PlaybackSpeedComboBox.SelectedItem.ToString());
             }
         }
@@ -324,37 +333,37 @@ namespace UniversalTelemetryReplay
             // Attempt the parse the logs
             foreach(LogItem log in replayView.logItems) 
             {
-                log.Status = "Parsing";
+                // Set status to parsing
+                UpdateParseStatus(ParseStatus.Parsing, log);
 
                 // If no path was selected, skip this log. 
                 if (log.pathSelected == false)
                 {
-                    log.Status = "Skipped";
-                    log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
-                    log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    UpdateParseStatus(ParseStatus.Skipped, log);
                     continue;
                 }
 
+                // Attempt to find a configuration for the log
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    log.Status = "Parsed";
-                    log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
-                    log.Configuration = "Not Found";
-                    log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+                    UpdateParseStatus(ParseStatus.NotFound, log);
                 }
                 else success++;
             }
 
+            // return true if any logs successfully parsed
             if(success <= 0) { return false; }
             else return true;
         }
 
         private bool ParseConfigurations(LogItem log)
         {
-            ObservableCollection<MessageConfiguration> configs = configManager.GetData();
+            // Preventive Check
+            if (configManager == null) return false;
 
-            foreach (MessageConfiguration config in configs)
+            // For each configuration in the data, check if the log matches
+            foreach (MessageConfiguration config in configManager.GetData())
             {
                 // load entries from the telemetry file
                 if (File.Exists(log.FilePath))
@@ -369,6 +378,7 @@ namespace UniversalTelemetryReplay
                     {
                         bytesInBuffer += numRead;
 
+                        // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
 
                         // loop through data to find a message that matches a configuration
@@ -382,10 +392,9 @@ namespace UniversalTelemetryReplay
                                 buffer[i + config.MessageSize - 2] == config.EndByte1 &&
                                 (config.EndByte2 == 0 || buffer[i + config.MessageSize - 1] == config.EndByte2))
                             {
-                                log.Status = "Parsed";
-                                log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
-                                log.Configuration = config.Name;
-                                log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                                // Set the config index and then update the status
+                                log.configIndex = config.RowIndex;
+                                UpdateParseStatus(ParseStatus.Found, log);
                                 return true;
                             }
                         }
@@ -402,6 +411,54 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Visible;
             else
                 ControlsGrid.Visibility = Visibility.Hidden;
+        }
+
+        public void UpdateParseStatus(ParseStatus pStatus, LogItem log)
+        {
+            switch(pStatus) 
+            {
+                case ParseStatus.Unparsed:
+                    {
+                        log.Status = "Not Parsed";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
+                        log.Configuration = "Unknown";
+                        log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
+                    }
+                    break;
+                case ParseStatus.Parsing:
+                    {
+                        log.Status = "Parsing";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                        log.Configuration = "Parsing";
+                        log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    }
+                    break;
+                case ParseStatus.Found:
+                    {
+                        log.Status = "Parsed";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                        if(log.configIndex != -1 && configManager != null)
+                            log.Configuration = configManager.GetData()[log.configIndex].Name;
+                        log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                    }
+                    break;
+                case ParseStatus.NotFound:
+                    {
+                        log.Status = "Parsed";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+                        log.Configuration = "Not Found";
+                        log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+                    }
+                    break;
+                case ParseStatus.Skipped:
+                    {
+                        log.Status = "Skipped";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                        log.Configuration = "Unknown";
+                        log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    }
+                    break;
+            }
         }
     }
 }

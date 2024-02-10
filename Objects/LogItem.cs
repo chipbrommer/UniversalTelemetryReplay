@@ -20,6 +20,7 @@ namespace UniversalTelemetryReplay.Objects
         private double _startTime = 0;
         private double _endTime = 0;
         public bool pathSelected = false;
+        public int configIndex = -1;
 
         public int Id
         {

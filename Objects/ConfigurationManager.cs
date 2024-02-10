@@ -8,8 +8,8 @@ namespace UniversalTelemetryReplay.Objects
     /// <param name="file_path">Full path to the settings file</param>
     public class ConfigurationManager<T>(string file_path) where T : class, new()
     {
-        private ObservableCollection<T> configurations = [];   // Config file template list
-        private readonly string file_path = file_path;                  // File path to the configurations file
+        private ObservableCollection<T> configurations = [];    // Config file template list
+        private readonly string file_path = file_path;          // File path to the configurations file
 
         public bool Load()
         {
@@ -101,6 +101,18 @@ namespace UniversalTelemetryReplay.Objects
             }
 
             return false;
+        }
+
+        public bool UpdateConfiguration(int index, T configuration)
+        {
+            if (configurations != null && index >= 0 && index < configurations.Count)
+            {
+                // Overwrite the item at the specified index with the new configuration
+                configurations[index] = configuration;
+                return true;
+            }
+
+            return false; // Configuration with the specified index not found
         }
     }
 

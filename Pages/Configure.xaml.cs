@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using Newtonsoft.Json;
 using System.Collections.ObjectModel;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Windows;
@@ -19,7 +20,7 @@ namespace UniversalTelemetryReplay.Pages
             InitializeComponent(); 
         }
 
-        private void AddConfiguration_Click(object sender, RoutedEventArgs e)
+        private void AddUpdateConfiguration_Click(object sender, RoutedEventArgs e)
         {
             // Retrieve value from the Name field (which is required)
             string name = NameTextBox.Text.Trim();
@@ -39,8 +40,10 @@ namespace UniversalTelemetryReplay.Pages
             uint messageSize = ParseUint(MessageSizeTextBox.Text);
             uint timestampSize = ParseUint(TimestampSizeTextBox.Text);
             uint timestampOffset = ParseUint(TimestampOffsetTextBox.Text);
+            double timestampScaling = EvaluateExpression(TimestampScalingTextBox.Text);
             byte end1 = ParseByte(EndByte1TextBox.Text);
             byte end2 = ParseByte(EndByte2TextBox.Text);
+            int index = ParseInt(IndexTextBox.Text);
 
             // Create a new MessageConfiguration object
             MessageConfiguration newConfiguration = new()
@@ -53,14 +56,17 @@ namespace UniversalTelemetryReplay.Pages
                 MessageSize = messageSize,
                 TimestampSize = timestampSize,
                 TimestampByteOffset = timestampOffset,
+                TimestampScaling = timestampScaling,
                 EndByte1 = end1,
                 EndByte2 = end2,
+                RowIndex = index,
             };
 
-            // Add the new configuration to the ConfigurationManager
             if (MainWindow.configManager != null)
             {
-                MainWindow.configManager.AddConfiguration(newConfiguration);
+                if (index < 0) MainWindow.configManager.AddConfiguration(newConfiguration);
+                else MainWindow.configManager.UpdateConfiguration(index, newConfiguration);
+
                 // Save the configurations to file
                 MainWindow.configManager.Save();
 
@@ -82,8 +88,10 @@ namespace UniversalTelemetryReplay.Pages
             MessageSizeTextBox.Text = "";
             TimestampSizeTextBox.Text = "";
             TimestampOffsetTextBox.Text = "";
+            TimestampScalingTextBox.Text = "";
             EndByte1TextBox.Text = "";
             EndByte2TextBox.Text = "";
+            IndexTextBox.Text = "-1";
 
             // Unselect the selected item in the DataGrid
             ConfigurationsDataGrid.SelectedItem = null;
@@ -157,6 +165,22 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        private static int ParseInt(string text)
+        {
+            // Check if the text is empty or null - return 0
+            if (string.IsNullOrEmpty(text))
+            {
+                return 0;
+            }
+
+            // Parse the text input as a int
+            if (int.TryParse(text, out int parsedInt))
+            {
+                return parsedInt;
+            }
+            return 0; // Return 0 if parsing fails
+        }
+
         private static uint ParseUint(string text)
         {
             // Check if the text is empty or null - return 0
@@ -171,6 +195,42 @@ namespace UniversalTelemetryReplay.Pages
                 return parsedUint;
             }
             return 0; // Return 0 if parsing fails
+        }
+
+        private static double ParseDouble(string text)
+        {
+            // Check if the text is empty or null - return 0.0
+            if (string.IsNullOrEmpty(text))
+            {
+                return 0.0;
+            }
+
+            // Parse the text input as a int
+            if (double.TryParse(text, out double parsed))
+            {
+                return parsed;
+            }
+            return 0.0; // Return 0.0 if parsing fails
+        }
+
+        private static double EvaluateExpression(string expression)
+        {
+            if (expression.Contains("^"))
+            {
+                // If the expression contains '^', use Math.Pow
+                string[] parts = expression.Split('^');
+                double baseValue = double.Parse(parts[0]);
+                double exponent = double.Parse(parts[1]);
+                return Math.Pow(baseValue, exponent);
+            }
+            else
+            {
+                // If the expression doesn't contain '^', use DataTable.Compute
+                // to get the expression value. 
+                DataTable dt = new DataTable();
+                object result = dt.Compute(expression, "");
+                return Convert.ToDouble(result);
+            }
         }
 
         public void UpdateConfigurationsDataGrid()
@@ -205,8 +265,10 @@ namespace UniversalTelemetryReplay.Pages
                 MessageSizeTextBox.Text = selectedConfiguration.MessageSize.ToString();
                 TimestampSizeTextBox.Text = selectedConfiguration.TimestampSize.ToString();
                 TimestampOffsetTextBox.Text = selectedConfiguration.TimestampByteOffset.ToString();
+                TimestampScalingTextBox.Text = selectedConfiguration.TimestampScaling.ToString();
                 EndByte1TextBox.Text = selectedConfiguration.EndByte1.ToString();
                 EndByte2TextBox.Text = selectedConfiguration.EndByte2.ToString();
+                IndexTextBox.Text = selectedConfiguration.RowIndex.ToString();
             }
         }
 

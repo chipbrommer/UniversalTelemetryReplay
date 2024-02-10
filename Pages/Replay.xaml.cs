@@ -1,12 +1,9 @@
 ﻿using Microsoft.Win32;
 using System.Collections.ObjectModel;
-using System.Data;
-using System.Security.AccessControl;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Xml.Linq;
 using UniversalTelemetryReplay.Objects;
 
 namespace UniversalTelemetryReplay.Pages
