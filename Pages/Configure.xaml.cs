@@ -115,16 +115,24 @@ namespace UniversalTelemetryReplay.Pages
                 return;
             }
 
-            // Clear all configurations
-            MainWindow.configManager.GetData().Clear();
-            // Save the configurations to file
-            MainWindow.configManager.Save();
+            // Display confirmation message
+            MessageBoxResult result = MessageBox.Show("Are you sure you want to delete all configurations?", "Confirm Deletion", MessageBoxButton.OKCancel, MessageBoxImage.Warning);
 
-            // Update the DataGrid
-            UpdateConfigurationsDataGrid();
+            // Check user's response
+            if (result == MessageBoxResult.OK)
+            {
 
-            // Reset Fields
-            ResetFields_Click(null, null);
+                // Clear all configurations
+                MainWindow.configManager.GetData().Clear();
+                // Save the configurations to file
+                MainWindow.configManager.Save();
+
+                // Update the DataGrid
+                UpdateConfigurationsDataGrid();
+
+                // Reset Fields
+                ResetFields_Click(null, null);
+            }
         }
 
 
