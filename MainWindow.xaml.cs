@@ -521,13 +521,8 @@ namespace UniversalTelemetryReplay
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
 
-                        if(log.ConfigIndex != -1 && config != null)
-                            log.Configuration = config.Name;
-
-                        if(error != ErrorReason.None)
-                        {
-                            
-                        }
+                        if (log.ConfigIndex != -1 && configManager != null)
+                            log.Configuration = configManager.GetData()[log.ConfigIndex].Name;
 
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                     }
