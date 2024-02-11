@@ -86,7 +86,7 @@ namespace UniversalTelemetryReplay.Pages
 
         }
 
-        private void UpdateAddButton()
+        public void UpdateAddButton(bool locked = false)
         {
             if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
 
@@ -96,6 +96,11 @@ namespace UniversalTelemetryReplay.Pages
                 AddLogItemButton.IsEnabled = false;
                 AddLogItemButton.Content = "Max Replay Items Reached";
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["PrimaryRedColor"];
+            }
+            else if(locked)
+            {
+                AddLogItemButton.IsEnabled = false;
+                AddLogItemButton.Content = "Current Logs Loaded - Please Reset To Add More";
             }
             else
             {
