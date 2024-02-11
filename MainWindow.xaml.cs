@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Data;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -56,6 +51,24 @@ namespace UniversalTelemetryReplay
             Found,
             NotFound,
             Skipped,
+        }
+
+        public enum ErrorReason
+        {
+            None,
+            NoFileSelected,
+            NoMessageSize,
+            NotEnoughSyncBytes,
+            NotEnoughEndBytes,
+            NoTimestampLocation,
+            NoTimestampSize,
+        }
+
+        public enum ParseLimit
+        {
+            None, 
+            Percent10,
+            Percent25,
         }
 
         readonly List<string> SpeedOptions =
@@ -322,7 +335,7 @@ namespace UniversalTelemetryReplay
             }
         }
 
-        private bool ParseSelectedLogs()
+        private static bool ParseSelectedLogs()
         {
             // Preventive check
             if (configManager == null || configManager.GetData() == null) return false;
@@ -334,12 +347,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // Set status to parsing
-                UpdateParseStatus(ParseStatus.Parsing, log);
+                UpdateParseStatus(ParseStatus.Parsing, log, null);
 
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    UpdateParseStatus(ParseStatus.Skipped, log);
+                    UpdateParseStatus(ParseStatus.Skipped, log, null);
                     continue;
                 }
 
@@ -347,7 +360,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    UpdateParseStatus(ParseStatus.NotFound, log);
+                    UpdateParseStatus(ParseStatus.NotFound, log, null);
                 }
                 else success++;
             }
@@ -369,21 +382,30 @@ namespace UniversalTelemetryReplay
                 if (File.Exists(log.FilePath))
                 {
                     using FileStream fileStream = File.Open(log.FilePath, FileMode.Open);
-                    const int MaxParse = 0;
+                    long fileSize = fileStream.Length;
                     int numRead = 0;
+                    long totalRead = 0;
                     int bytesInBuffer = 0;
                     byte[] buffer = new byte[config.MessageSize];
+                    bool foundStart = false;
 
                     while ((numRead = fileStream.Read(buffer, bytesInBuffer, buffer.Length - bytesInBuffer)) > 0)
                     {
                         bytesInBuffer += numRead;
+                        totalRead += numRead;
 
                         // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
 
-                        // loop through data to find a message that matches a configuration
-                        int i = 0;
-                        for (i = 0; i <= bytesInBuffer - config.MessageSize; i++)
+                        // If we havent found a message, and
+                        // if the parse limit has been reached - break out
+                        if (settingsFile != null && settingsFile.data != null)
+                        {
+                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, totalRead, fileSize)) break;
+                        }
+
+                        // Loop through data to find a message that matches a configuration
+                        for (int i = 0; i <= bytesInBuffer - config.MessageSize; i++)
                         {
                             if (buffer[i + 0] == config.SyncByte1 &&
                                 buffer[i + 1] == config.SyncByte2 &&
@@ -392,17 +414,79 @@ namespace UniversalTelemetryReplay
                                 buffer[i + config.MessageSize - 2] == config.EndByte1 &&
                                 (config.EndByte2 == 0 || buffer[i + config.MessageSize - 1] == config.EndByte2))
                             {
-                                // Set the config index and then update the status
-                                log.ConfigIndex = config.RowIndex;
-                                UpdateParseStatus(ParseStatus.Found, log);
-                                return true;
+                                bytesInBuffer -= (int)config.MessageSize;
+
+                                if (!foundStart)
+                                {
+                                    // Set the config index and then update the status
+                                    log.ConfigIndex = config.RowIndex;
+
+                                    // Get the start times
+                                    log.StartTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+
+                                    foundStart = true;
+                                }
+                                else
+                                {
+                                    // Get the end times
+                                    log.EndTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+                                }
+
+                            }
+                            else
+                            {
+                                bytesInBuffer--;
                             }
                         }
+                    
+                        // If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
+                        if(bytesInBuffer != 0)
+                        {
+                            Array.Copy(buffer, buffer.Length - bytesInBuffer, buffer, 0, bytesInBuffer);
+                        }
+                    }
+
+                    if(log.StartTime != 0 && log.EndTime != 0)
+                    {
+                        UpdateParseStatus(ParseStatus.Found, log, config);
+                        return true;
                     }
                 }
+            
             }
 
             return false;
+        }
+
+        private static bool IsParseLimitReached(ParseLimit limit, long totalRead, long fileSize)
+        {
+            double percentageParsed = totalRead / fileSize * 100;
+
+            return limit switch
+            {
+                ParseLimit.None => false,
+                ParseLimit.Percent10 => percentageParsed >= 10,
+                ParseLimit.Percent25 => percentageParsed >= 25,
+                _ => false,
+            };
+        }
+
+        private static double ParseTimestamp(byte[] buffer, int offset, int timestampSize, double timestampScaling)
+        {
+            if (timestampSize == 4)
+            {
+                uint time = BitConverter.ToUInt32(buffer, offset);
+                return time / timestampScaling;
+            }
+            else if (timestampSize == 8)
+            {
+                double time = BitConverter.ToDouble(buffer, offset);
+                return time / timestampScaling;
+            }
+            else
+            {
+                return 0.0;
+            }
         }
 
         public void UpdateControls(bool visible)
@@ -413,7 +497,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
+        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, MessageConfiguration config,ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
@@ -438,8 +522,13 @@ namespace UniversalTelemetryReplay
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
 
-                        if(log.ConfigIndex != -1 && configManager != null)
-                            log.Configuration = configManager.GetData()[log.ConfigIndex].Name;
+                        if(log.ConfigIndex != -1 && config != null)
+                            log.Configuration = config.Name;
+
+                        if(error != ErrorReason.None)
+                        {
+                            
+                        }
 
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                     }
@@ -458,6 +547,8 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Configuration = "Unknown";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+
+
                     }
                     break;
             }
