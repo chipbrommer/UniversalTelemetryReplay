@@ -377,12 +377,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // Set status to parsing
-                UpdateLogStatus(LogStatus.Parsing, log, null);
+                UpdateLogStatus(LogStatus.Parsing, log);
 
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    UpdateLogStatus(LogStatus.Skipped, log, null);
+                    UpdateLogStatus(LogStatus.Skipped, log);
                     continue;
                 }
 
@@ -390,7 +390,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    UpdateLogStatus(LogStatus.NotFound, log, null);
+                    UpdateLogStatus(LogStatus.NotFound, log);
                 }
                 else success++;
             }
@@ -427,13 +427,6 @@ namespace UniversalTelemetryReplay
                         // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
 
-                        // If we havent found a message, and
-                        // if the parse limit has been reached - break out
-                        if (settingsFile != null && settingsFile.data != null)
-                        {
-                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, config, totalRead, fileSize)) break;
-                        }
-
                         // Loop through data to find a message that matches a configuration
                         for (int i = 0; i <= bytesInBuffer - config.MessageSize; i++)
                         {
@@ -468,6 +461,14 @@ namespace UniversalTelemetryReplay
                             //    bytesInBuffer--;
                             //}
                         }
+
+                        // If we havent found a message, and
+                        // if the parse limit has been reached - break out
+                        if (settingsFile != null && settingsFile.data != null)
+                        {
+                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, config, totalRead, fileSize)) break;
+                        }
+
                         //// If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
                         //if (bytesInBuffer != 0)
                         //{
@@ -477,7 +478,7 @@ namespace UniversalTelemetryReplay
 
                     if(log.StartTime != 0 && log.EndTime != 0)
                     {
-                        UpdateLogStatus(LogStatus.Found, log, config);
+                        UpdateLogStatus(LogStatus.Found, log);
                         return true;
                     }
                 }
@@ -529,7 +530,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, MessageConfiguration config,ErrorReason error = ErrorReason.None)
+        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
