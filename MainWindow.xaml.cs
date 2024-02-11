@@ -433,17 +433,16 @@ namespace UniversalTelemetryReplay
                                 }
 
                             }
-                            else
-                            {
-                                bytesInBuffer--;
-                            }
+                            //else
+                            //{
+                            //    bytesInBuffer--;
+                            //}
                         }
-                    
-                        // If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
-                        if(bytesInBuffer != 0)
-                        {
-                            Array.Copy(buffer, buffer.Length - bytesInBuffer, buffer, 0, bytesInBuffer);
-                        }
+                        //// If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
+                        //if (bytesInBuffer != 0)
+                        //{
+                        //    Array.Copy(buffer, buffer.Length - bytesInBuffer, buffer, 0, bytesInBuffer);
+                        //}
                     }
 
                     if(log.StartTime != 0 && log.EndTime != 0)
