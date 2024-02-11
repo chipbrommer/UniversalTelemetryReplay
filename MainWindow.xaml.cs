@@ -413,7 +413,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
+        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log)
         {
             switch(pStatus) 
             {
