@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.ComponentModel;
+using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -66,9 +67,30 @@ namespace UniversalTelemetryReplay
 
         public enum ParseLimit
         {
-            None, 
+            [Description("None")]
+            None,
+            [Description("10%")]
             Percent10,
+            [Description("25%")]
             Percent25,
+            [Description("1 Message")]
+            OneMessage,
+            [Description("5 Messages")]
+            FiveMessages,
+            [Description("10 Messages")]
+            TenMessages,
+        }
+
+        public enum ReplayLimit
+        {
+            [Description("1")]
+            One = 1,
+            [Description("5")]
+            Five = 5,
+            [Description("10")]
+            Ten = 10,
+            [Description("20")]
+            Twenty = 20,
         }
 
         readonly List<string> SpeedOptions =
@@ -119,6 +141,8 @@ namespace UniversalTelemetryReplay
             // Update things based on settings.
             ThemeController.SetTheme(settingsFile.data.Theme);
             settingsView.SetThemeSelection(settingsFile.data.Theme);
+            settingsView.SetParseLimitSelection(settingsFile.data.ParseLimit);
+            settingsView.SetReplayLimitSelection(settingsFile.data.ReplayLimit);
 
             // Attempt to load configurations
             string configFilePath = programDataPath + configurationsFileName;
@@ -347,12 +371,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // Set status to parsing
-                UpdateParseStatus(ParseStatus.Parsing, log, null);
+                UpdateParseStatus(ParseStatus.Parsing, log);
 
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    UpdateParseStatus(ParseStatus.Skipped, log, null);
+                    UpdateParseStatus(ParseStatus.Skipped, log);
                     continue;
                 }
 
@@ -360,7 +384,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    UpdateParseStatus(ParseStatus.NotFound, log, null);
+                    UpdateParseStatus(ParseStatus.NotFound, log);
                 }
                 else success++;
             }
@@ -401,7 +425,7 @@ namespace UniversalTelemetryReplay
                         // if the parse limit has been reached - break out
                         if (settingsFile != null && settingsFile.data != null)
                         {
-                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, totalRead, fileSize)) break;
+                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, config, totalRead, fileSize)) break;
                         }
 
                         // Loop through data to find a message that matches a configuration
@@ -447,7 +471,7 @@ namespace UniversalTelemetryReplay
 
                     if(log.StartTime != 0 && log.EndTime != 0)
                     {
-                        UpdateParseStatus(ParseStatus.Found, log, config);
+                        UpdateParseStatus(ParseStatus.Found, log);
                         return true;
                     }
                 }
@@ -457,7 +481,7 @@ namespace UniversalTelemetryReplay
             return false;
         }
 
-        private static bool IsParseLimitReached(ParseLimit limit, long totalRead, long fileSize)
+        private static bool IsParseLimitReached(ParseLimit limit, MessageConfiguration config, long totalRead, long fileSize)
         {
             double percentageParsed = totalRead / fileSize * 100;
 
@@ -466,6 +490,9 @@ namespace UniversalTelemetryReplay
                 ParseLimit.None => false,
                 ParseLimit.Percent10 => percentageParsed >= 10,
                 ParseLimit.Percent25 => percentageParsed >= 25,
+                ParseLimit.OneMessage => totalRead >= config.MessageSize,
+                ParseLimit.FiveMessages => totalRead >= (config.MessageSize * 5),
+                ParseLimit.TenMessages => totalRead >= (config.MessageSize * 10),
                 _ => false,
             };
         }
@@ -496,7 +523,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, MessageConfiguration config,ErrorReason error = ErrorReason.None)
+        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
@@ -541,8 +568,6 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Configuration = "Unknown";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
-
-
                     }
                     break;
             }
