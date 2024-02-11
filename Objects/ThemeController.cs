@@ -16,7 +16,8 @@ namespace UniversalTelemetryReplay.Objects
             Light,
             Modern,
             Navy,
-            Traditional
+            Traditional,
+            Cyber
         }
 
         public static ResourceDictionary ThemeDictionary
@@ -38,6 +39,7 @@ namespace UniversalTelemetryReplay.Objects
                 ThemeTypes.Light => "Light",
                 ThemeTypes.Navy => "Navy",
                 ThemeTypes.Traditional => "Traditional",
+                ThemeTypes.Cyber => "Cyber",
                 // Intentional fall through 
                 _ => "Modern",
             };

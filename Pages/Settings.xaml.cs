@@ -18,6 +18,7 @@ namespace UniversalTelemetryReplay.Pages
         {
             switch (value)
             {
+                case ThemeController.ThemeTypes.Cyber:          CyberTheme.IsChecked = true;        break;
                 case ThemeController.ThemeTypes.Dark:           DarkTheme.IsChecked = true;         break;
                 case ThemeController.ThemeTypes.Light:          LightTheme.IsChecked = true;        break;
                 case ThemeController.ThemeTypes.Modern:         ModernTheme.IsChecked = true;       break;
@@ -34,6 +35,7 @@ namespace UniversalTelemetryReplay.Pages
                 // Apply the selected theme based on the value of selectedTheme
                 switch (selectedTheme)
                 {
+                    case "Cyber":       ThemeController.SetTheme(ThemeController.ThemeTypes.Cyber);         break;
                     case "Dark":        ThemeController.SetTheme(ThemeController.ThemeTypes.Dark);          break;
                     case "Light":       ThemeController.SetTheme(ThemeController.ThemeTypes.Light);         break;
                     case "Modern":      ThemeController.SetTheme(ThemeController.ThemeTypes.Modern);        break;

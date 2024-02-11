@@ -197,25 +197,9 @@ namespace UniversalTelemetryReplay.Pages
             return 0; // Return 0 if parsing fails
         }
 
-        private static double ParseDouble(string text)
-        {
-            // Check if the text is empty or null - return 0.0
-            if (string.IsNullOrEmpty(text))
-            {
-                return 0.0;
-            }
-
-            // Parse the text input as a int
-            if (double.TryParse(text, out double parsed))
-            {
-                return parsed;
-            }
-            return 0.0; // Return 0.0 if parsing fails
-        }
-
         private static double EvaluateExpression(string expression)
         {
-            if (expression.Contains("^"))
+            if (expression.Contains('^'))
             {
                 // If the expression contains '^', use Math.Pow
                 string[] parts = expression.Split('^');
@@ -227,7 +211,7 @@ namespace UniversalTelemetryReplay.Pages
             {
                 // If the expression doesn't contain '^', use DataTable.Compute
                 // to get the expression value. 
-                DataTable dt = new DataTable();
+                DataTable dt = new();
                 object result = dt.Compute(expression, "");
                 return Convert.ToDouble(result);
             }

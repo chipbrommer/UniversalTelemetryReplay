@@ -337,7 +337,7 @@ namespace UniversalTelemetryReplay
                 UpdateParseStatus(ParseStatus.Parsing, log);
 
                 // If no path was selected, skip this log. 
-                if (log.pathSelected == false)
+                if (log.PathSelected == false)
                 {
                     UpdateParseStatus(ParseStatus.Skipped, log);
                     continue;
@@ -357,7 +357,7 @@ namespace UniversalTelemetryReplay
             else return true;
         }
 
-        private bool ParseConfigurations(LogItem log)
+        private static bool ParseConfigurations(LogItem log)
         {
             // Preventive Check
             if (configManager == null) return false;
@@ -393,7 +393,7 @@ namespace UniversalTelemetryReplay
                                 (config.EndByte2 == 0 || buffer[i + config.MessageSize - 1] == config.EndByte2))
                             {
                                 // Set the config index and then update the status
-                                log.configIndex = config.RowIndex;
+                                log.ConfigIndex = config.RowIndex;
                                 UpdateParseStatus(ParseStatus.Found, log);
                                 return true;
                             }
@@ -413,7 +413,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public void UpdateParseStatus(ParseStatus pStatus, LogItem log)
+        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
@@ -437,8 +437,10 @@ namespace UniversalTelemetryReplay
                     {
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
-                        if(log.configIndex != -1 && configManager != null)
-                            log.Configuration = configManager.GetData()[log.configIndex].Name;
+
+                        if(log.ConfigIndex != -1 && configManager != null)
+                            log.Configuration = configManager.GetData()[log.ConfigIndex].Name;
+
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                     }
                     break;

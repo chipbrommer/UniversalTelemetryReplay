@@ -58,7 +58,6 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
-
         private void PortTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (sender is not TextBox textBox) return;
@@ -105,16 +104,15 @@ namespace UniversalTelemetryReplay.Pages
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["TextSecondaryColor"];
             }
 
-            if (logItems.Count > 0)
-                mw.UpdateControls(true);
-            else
-                mw.UpdateControls(false);
+            // Show / Hide the play controls based on number of logs
+            if (logItems.Count > 0) mw.UpdateControls(true);
+            else mw.UpdateControls(false);
         }
 
         private void LogBrowse_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button? browseButton = sender as Button;
+            if (sender is not Button browseButton) return;
 
             // Get the data context of the button, which is the item in the list
             if (browseButton.DataContext is LogItem logItem)
@@ -136,7 +134,7 @@ namespace UniversalTelemetryReplay.Pages
                     // Find the index of the logItem in the ObservableCollection and update it
                     int index = logItems.IndexOf(logItem);
                     logItems[index].FilePath = selectedFilePath;
-                    logItems[index].pathSelected = true;
+                    logItems[index].PathSelected = true;
                 }
             }
         }
@@ -144,7 +142,7 @@ namespace UniversalTelemetryReplay.Pages
         private void LogUpdate_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button button = sender as Button;
+            if (sender is not Button button) return;
 
             // Get the data context of the button, which is the item in the list
             if (button.DataContext is LogItem logItem)
@@ -159,15 +157,15 @@ namespace UniversalTelemetryReplay.Pages
             if (button.Parent is StackPanel parent)
             {
                 // Find the "Update" button by its name and hide it
-                Button updateButton = parent.FindName("UpdateButton") as Button;
-                updateButton.Visibility = Visibility.Hidden;
+                if (parent.FindName("UpdateButton") is not Button updateButton) return;
+                else updateButton.Visibility = Visibility.Hidden;
             }
         }
 
         private void LogRemove_Click(object sender, RoutedEventArgs e)
         {
             // Get the button that was clicked
-            Button? removeButton = sender as Button;
+            if (sender is not Button removeButton) return;
 
             // Get the data context of the button, which is the item in the list
             if (removeButton.DataContext != null)

@@ -77,6 +77,17 @@
                             FontSize="12"
                             Checked="Theme_Changed"
                             Foreground="{DynamicResource TextSecondaryColor}"/>
+                <RadioButton
+                            x:Name="CyberTheme"
+                            Margin="0,8,0,0"
+                            Content="Cyber"
+                            Tag="Cyber"
+                            GroupName="themeSelect"
+                            IsChecked="False" 
+                            FontWeight="Medium"
+                            FontSize="12"
+                            Checked="Theme_Changed"
+                            Foreground="{DynamicResource TextSecondaryColor}"/>
             </StackPanel>
         </Border>
 

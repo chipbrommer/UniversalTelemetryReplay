@@ -12,6 +12,7 @@
             
             <ResourceDictionary.MergedDictionaries>
                 <!-- Themes -->
+                <!--<ResourceDictionary Source="Themes/Cyber.xaml"/>-->
                 <!--<ResourceDictionary Source="Themes/Dark.xaml"/>-->
                 <!--<ResourceDictionary Source="Themes/Light.xaml"/>-->
                 <ResourceDictionary Source="Themes/Modern.xaml"/>

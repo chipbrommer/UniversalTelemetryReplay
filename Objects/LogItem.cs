@@ -19,8 +19,9 @@ namespace UniversalTelemetryReplay.Objects
         private int _port = 0;
         private double _startTime = 0;
         private double _endTime = 0;
-        public bool pathSelected = false;
-        public int configIndex = -1;
+        private double _playbackAmountComplete = 0;
+        public bool _pathSelected = false;
+        public int _configIndex = -1;
 
         public int Id
         {
@@ -91,6 +92,24 @@ namespace UniversalTelemetryReplay.Objects
         {
             get { return _endTime; }
             set { _endTime = value; OnPropertyChanged(nameof(EndTime)); }
+        }
+
+        public double PlaybackAmountComplete
+        {
+            get { return _playbackAmountComplete; }
+            set { _playbackAmountComplete = value; OnPropertyChanged(nameof(PlaybackAmountComplete)); }
+        }
+
+        public bool PathSelected
+        {
+            get { return _pathSelected; }
+            set { _pathSelected = value; OnPropertyChanged(nameof(PathSelected)); }
+        }
+
+        public int ConfigIndex
+        {
+            get { return _configIndex; }
+            set { _configIndex = value; OnPropertyChanged(nameof(ConfigIndex)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

@@ -39,27 +39,67 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
-                                        <ColumnDefinition Width="Auto" />
+                                        <!--<ColumnDefinition Width="Auto" />-->
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
 
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Configuration" Margin="5,5,5,0" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Configuration" Margin="5,5,5,0" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                         <Border Background="{Binding ConfigBG}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
-                                            <Label Content="{Binding Configuration}" Foreground="{DynamicResource TextPrimaryColor}" 
+                                            <Label Content="{Binding Configuration}" Foreground="{DynamicResource ButtonTextColor}" 
                                                    HorizontalAlignment="Center"
                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                                         </Border>
-                                        <TextBlock Text="Status" Margin="5,0,5,0" HorizontalAlignment="Center" />
+                                        <TextBlock Text="Status" Margin="5,0,5,0" HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                         <Border Background="{Binding StatusBG}" Margin="5,2,5,5" CornerRadius="5" Height="25" Width="120">
-                                            <Label Content="{Binding Status}" Foreground="{DynamicResource TextPrimaryColor}" 
+                                            <Label Content="{Binding Status}" Foreground="{DynamicResource ButtonTextColor}" 
                                                    HorizontalAlignment="Center"
                                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                                         </Border>
                                     </StackPanel>
 
                                     <StackPanel Grid.Column="1">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="6*"/>
+                                                <RowDefinition Height="4*"/>
+                                            </Grid.RowDefinitions>
+                                        </Grid>
+
+                                        <UniformGrid Grid.Row="0" Rows="2">
+                                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                                <TextBlock Text="Filepath:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBox Text="{Binding FilePath}" Margin="5" VerticalAlignment="Center" IsReadOnly="True" Width="400"/>
+                                            </StackPanel>
+                                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                                <TextBlock Text="IP:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBox Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Center" />
+                                                <TextBlock Text="Port:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBox Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
+                                                      Margin="5" Width="50" VerticalAlignment="Center" TextAlignment="Center"
+                                                      PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged"/>
+                                            </StackPanel>
+                                        </UniformGrid>
+
+                                        <UniformGrid Grid.Row="1" Rows="1">
+                                            <Grid Grid.Row="1">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Grid.Column="0" Text="{Binding StartTime}" VerticalAlignment="Center" HorizontalAlignment="Left" 
+                                                        TextAlignment="Center" Margin="5,0,5,0" Width="40" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding PlaybackAmountComplete}" VerticalAlignment="Center" 
+                                                        TickPlacement="None" Margin="5" IsEnabled="False"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding EndTime}" VerticalAlignment="Center" HorizontalAlignment="Right" 
+                                                        TextAlignment="Center" Margin="5,0,5,0" Width="40" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                            </Grid>
+                                        </UniformGrid>
+                                    </StackPanel>
+
+                                    <!--<StackPanel Grid.Column="1">
                                         <TextBlock Text="Filepath:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                         <TextBlock Text="IP:" Margin="5" Grid.Column="0" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                     </StackPanel>
@@ -73,7 +113,7 @@
                                                  Margin="5" Grid.Column="1" Width="50" VerticalAlignment="Center"
                                                  PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged"/>
                                         </StackPanel>
-                                    </StackPanel>
+                                    </StackPanel>-->
 
                                     <!-- Buttons -->
                                     <StackPanel Grid.Column="3" HorizontalAlignment="Center">
