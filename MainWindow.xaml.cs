@@ -45,13 +45,15 @@ namespace UniversalTelemetryReplay
             Stopped,
         }
 
-        public enum ParseStatus
+        public enum LogStatus
         {
             Unparsed,
             Parsing,
             Found,
             NotFound,
             Skipped,
+            Playing,
+            Finished,
         }
 
         public enum ErrorReason
@@ -214,8 +216,12 @@ namespace UniversalTelemetryReplay
             {
                 if (clickedButton == LoadButton)
                 {
+                    replayView.UpdateAddButton(true);
+
                     Task.Run(() =>
                     {
+                        
+
                         if (ParseSelectedLogs())
                         {
                             Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Loaded));
@@ -259,7 +265,7 @@ namespace UniversalTelemetryReplay
                 else if (clickedButton == ResetButton)
                 {
                     // Handle ResetButton click
-
+                    replayView.UpdateAddButton(false);
                     UpdatePlaybackControls(PlayBackStatus.Unloaded);
                 }
             }
@@ -371,12 +377,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // Set status to parsing
-                UpdateParseStatus(ParseStatus.Parsing, log);
+                UpdateLogStatus(LogStatus.Parsing, log, null);
 
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    UpdateParseStatus(ParseStatus.Skipped, log);
+                    UpdateLogStatus(LogStatus.Skipped, log, null);
                     continue;
                 }
 
@@ -384,7 +390,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    UpdateParseStatus(ParseStatus.NotFound, log);
+                    UpdateLogStatus(LogStatus.NotFound, log, null);
                 }
                 else success++;
             }
@@ -471,7 +477,7 @@ namespace UniversalTelemetryReplay
 
                     if(log.StartTime != 0 && log.EndTime != 0)
                     {
-                        UpdateParseStatus(ParseStatus.Found, log);
+                        UpdateLogStatus(LogStatus.Found, log, config);
                         return true;
                     }
                 }
@@ -523,11 +529,11 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
+        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, MessageConfiguration config,ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
-                case ParseStatus.Unparsed:
+                case LogStatus.Unparsed:
                     {
                         log.Status = "Not Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
@@ -535,7 +541,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                     }
                     break;
-                case ParseStatus.Parsing:
+                case LogStatus.Parsing:
                     {
                         log.Status = "Parsing";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
@@ -543,7 +549,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                     }
                     break;
-                case ParseStatus.Found:
+                case LogStatus.Found:
                     {
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
@@ -554,7 +560,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                     }
                     break;
-                case ParseStatus.NotFound:
+                case LogStatus.NotFound:
                     {
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
@@ -562,12 +568,24 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
                     }
                     break;
-                case ParseStatus.Skipped:
+                case LogStatus.Skipped:
                     {
                         log.Status = "Skipped";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Configuration = "Unknown";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                    }
+                    break;
+                case LogStatus.Playing:
+                    {
+                        log.Status = "Playing";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                    }
+                    break;
+                case LogStatus.Finished:
+                    {
+                        log.Status = "Finished";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryBlueColor"];
                     }
                     break;
             }
