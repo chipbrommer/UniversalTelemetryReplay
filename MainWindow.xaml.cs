@@ -21,13 +21,22 @@ namespace UniversalTelemetryReplay
         private readonly string configurationsFileName = @"\configurations.json";
         internal static SettingsFile<Settings>? settingsFile;
         internal static ConfigurationManager<MessageConfiguration>? configManager;
-        private readonly double selectedPlaybackSpeed = 0;
+        private double selectedPlaybackSpeed = 0;
+        private double currentPlaybackSpeed = 0;
+        private double startTime = 0;
+        private double endTime = 0;
 
         /// Views
         private View currentView;
         static private Pages.Configure  configureView;
         static private Pages.Replay     replayView;
         static private Pages.Settings   settingsView;
+
+        /// Threads
+        Thread replayThread;
+        Thread monitorThread;
+        private ManualResetEvent stopSignal = new(false);
+        private ManualResetEvent pauseSignal = new(false);
 
         public enum View
         {
@@ -220,11 +229,27 @@ namespace UniversalTelemetryReplay
 
                     Task.Run(() =>
                     {
-                        
-
                         if (ParseSelectedLogs())
                         {
-                            Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Loaded));
+                            Dispatcher.Invoke(() =>
+                            {
+                                UpdatePlaybackControls(PlayBackStatus.Loaded);
+
+                                // Get our starting and ending time points
+                                foreach (LogItem log in replayView.logItems)
+                                {
+                                    if(log != null)
+                                    {
+                                        if (startTime == 0 || log.StartTime < startTime) startTime = log.StartTime;
+                                        if (endTime == 0 || log.EndTime > endTime) endTime = log.EndTime;
+                                    }
+                                }
+
+                                // Update UI items with 2 decimal places precision
+                                ReplayStartTime.Text = startTime.ToString("F2");
+                                ReplayEndTime.Text = endTime.ToString("F2");
+
+                            });
                         }
                         else
                         {
@@ -234,38 +259,62 @@ namespace UniversalTelemetryReplay
                 }
                 else if (clickedButton == RestartButton)
                 {
-                    // Handle RestartButton click
+                    // Reset the signals
+                    stopSignal.Reset();
+                    pauseSignal.Reset();
 
+                    // Start the replay
+                    StartReplay();
+
+                    // Update UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == PlayButton)
                 {
-                    // Handle PlayButton click
+                    // Start the replay
+                    StartReplay();
 
+                    // Update UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == PauseButton)
                 {
-                    // Handle PauseButton click
+                    // Set the pauseSignal
+                    pauseSignal.Set();
 
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Paused);
                 }
                 else if (clickedButton == ResumeButton)
                 {
-                    // Handle PlayButton click
+                    // Reset the pauseSignal
+                    pauseSignal.Reset();
 
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == StopButton)
                 {
-                    // Handle StopButton click
+                    // Signal the threads to stop.
+                    stopSignal.Set();
 
+                    // Wait for both threads to finish
+                    replayThread?.Join();
+                    monitorThread?.Join();
+
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Stopped);
                 }
                 else if (clickedButton == ResetButton)
                 {
-                    // Handle ResetButton click
+                    // Reset the signals
+                    stopSignal.Reset();
+                    pauseSignal.Reset();
+
+                    // Unlock the add button
                     replayView.UpdateAddButton(false);
+
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Unloaded);
                 }
             }
@@ -589,6 +638,54 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryBlueColor"];
                     }
                     break;
+            }
+        }
+
+        private void StartReplay()
+        {
+            // Start the threads
+            replayThread = new(StartReplayWorker);
+            replayThread.Start();
+
+            monitorThread = new(StartReplayMonitor);
+            monitorThread.Start();
+        }
+
+        private void StartReplayWorker()
+        {
+            while (true)
+            {
+                // Check if we are paused
+                pauseSignal.WaitOne(0);
+
+                // Check if the signal is set - Indicating a stop
+                if (stopSignal.WaitOne(0))
+                {
+                    Console.WriteLine("Replay stopped.");
+                    break;
+                }
+
+                // Do some work 
+                Thread.Sleep(100);
+            }
+        }
+
+        private void StartReplayMonitor()
+        {
+            while (true)
+            {
+                // Check if we are paused
+                pauseSignal.WaitOne(0);
+
+                // Check if the signal is set - Indicating a stop
+                if (stopSignal.WaitOne(0))
+                {
+                    Console.WriteLine("Monitor stopped.");
+                    break;
+                }
+
+                // Do some work 
+                Thread.Sleep(100);
             }
         }
     }
