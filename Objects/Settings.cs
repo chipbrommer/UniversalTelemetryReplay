@@ -4,8 +4,10 @@
     public class Settings
     {
         public ThemeController.ThemeTypes Theme = ThemeController.ThemeTypes.Modern;
-        public int MaxReplays = 5;
+        public MainWindow.ParseLimit ParseLimit = MainWindow.ParseLimit.Percent10;
+        public MainWindow.ReplayLimit ReplayLimit = MainWindow.ReplayLimit.Five;
         public string PlaybackSpeed = "";
         public bool ConcurrentPlaybackEnabled = false;
+        public bool DebugMode = true;
     }
 }

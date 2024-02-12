@@ -30,7 +30,7 @@ namespace UniversalTelemetryReplay.Pages
         {
             // Preventive check
             if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
-            if (logItems.Count > MainWindow.settingsFile.data.MaxReplays) return;
+            if (logItems.Count > (int)MainWindow.settingsFile.data.ReplayLimit) return;
 
             // Add a new log item to the logItems collection
             logItems.Add(new LogItem()
@@ -86,16 +86,21 @@ namespace UniversalTelemetryReplay.Pages
 
         }
 
-        private void UpdateAddButton()
+        public void UpdateAddButton(bool locked = false)
         {
             if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
 
             // If we are at maximum items, disable button. 
-            if (logItems.Count >= MainWindow.settingsFile.data.MaxReplays)
+            if (logItems.Count >= (int)MainWindow.settingsFile.data.ReplayLimit)
             {
                 AddLogItemButton.IsEnabled = false;
                 AddLogItemButton.Content = "Max Replay Items Reached";
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["PrimaryRedColor"];
+            }
+            else if(locked)
+            {
+                AddLogItemButton.IsEnabled = false;
+                AddLogItemButton.Content = "Current Logs Loaded - Please Reset To Add More";
             }
             else
             {

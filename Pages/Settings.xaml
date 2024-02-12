@@ -20,75 +20,98 @@
         </Grid>
         
         <Border Grid.Row="1" CornerRadius="10" Margin="5">
-            <StackPanel Margin="5">
-                <TextBlock FontSize="16" FontWeight="Medium" Text="Theme" Foreground="{DynamicResource TextSecondaryColor}"/>
-                <RadioButton
-                            x:Name="DarkTheme"
-                            Margin="0,8,0,0"
-                            Content="Dark"
-                            Tag="Dark"
-                            GroupName="themeSelect"
-                            IsChecked="False"
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>
-                <RadioButton
-                            x:Name="LightTheme"
-                            Margin="0,8,0,0"
-                            Content="Light"
-                            Tag="Light"
-                            GroupName="themeSelect"
-                            IsChecked="False" 
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>           
-                <RadioButton
-                            x:Name="ModernTheme"
-                            Margin="0,8,0,0"
-                            Content="Modern"
-                            Tag="Modern"
-                            GroupName="themeSelect"
-                            IsChecked="False" 
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>
-                <RadioButton
-                            x:Name="NavyTheme"
-                            Margin="0,8,0,0"
-                            Content="Navy"
-                            Tag="Navy"
-                            GroupName="themeSelect"
-                            IsChecked="False" 
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>
-                <RadioButton
-                            x:Name="TraditionalTheme"
-                            Margin="0,8,0,0"
-                            Content="Traditional"
-                            Tag="Traditional"
-                            GroupName="themeSelect"
-                            IsChecked="False" 
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>
-                <RadioButton
-                            x:Name="CyberTheme"
-                            Margin="0,8,0,0"
-                            Content="Cyber"
-                            Tag="Cyber"
-                            GroupName="themeSelect"
-                            IsChecked="False" 
-                            FontWeight="Medium"
-                            FontSize="12"
-                            Checked="Theme_Changed"
-                            Foreground="{DynamicResource TextSecondaryColor}"/>
-            </StackPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <UniformGrid Grid.Column="0" Columns="1" HorizontalAlignment="Center">
+                    <TextBlock FontSize="14" FontWeight="Medium" Text="Theme" TextDecorations="Underline"
+                               HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                    <RadioButton
+                                x:Name="DarkTheme"
+                                Margin="0,8,0,0"
+                                Content="Dark"
+                                Tag="Dark"
+                                GroupName="themeSelect"
+                                IsChecked="False"
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>
+                    <RadioButton
+                                x:Name="LightTheme"
+                                Margin="0,8,0,0"
+                                Content="Light"
+                                Tag="Light"
+                                GroupName="themeSelect"
+                                IsChecked="False" 
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>           
+                    <RadioButton
+                                x:Name="ModernTheme"
+                                Margin="0,8,0,0"
+                                Content="Modern"
+                                Tag="Modern"
+                                GroupName="themeSelect"
+                                IsChecked="False" 
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>
+                    <RadioButton
+                                x:Name="NavyTheme"
+                                Margin="0,8,0,0"
+                                Content="Navy"
+                                Tag="Navy"
+                                GroupName="themeSelect"
+                                IsChecked="False" 
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>
+                    <RadioButton
+                                x:Name="TraditionalTheme"
+                                Margin="0,8,0,0"
+                                Content="Traditional"
+                                Tag="Traditional"
+                                GroupName="themeSelect"
+                                IsChecked="False" 
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>
+                    <RadioButton
+                                x:Name="CyberTheme"
+                                Margin="0,8,0,0"
+                                Content="Cyber"
+                                Tag="Cyber"
+                                GroupName="themeSelect"
+                                IsChecked="False" 
+                                FontWeight="Medium"
+                                FontSize="12"
+                                Checked="Theme_Changed"
+                                Foreground="{DynamicResource TextSecondaryColor}"/>
+                </UniformGrid>
+                <UniformGrid Grid.Column="1" Columns="1" HorizontalAlignment="Center">
+                    <StackPanel>
+                        <TextBlock FontSize="14" FontWeight="Medium" Text="Log Limit" TextDecorations="Underline"
+                        HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                        <ComboBox x:Name="ReplayComboBox" Width="100" Height="22" Margin="2"
+                            SelectionChanged="ReplayComboBox_SelectionChanged"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock FontSize="14" FontWeight="Medium" Text="Parse Limit" TextDecorations="Underline"
+                        HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                        <ComboBox x:Name="ParseComboBox" Width="100" Height="22" Margin="2"
+                            SelectionChanged="ParseComboBox_SelectionChanged"/>
+                    </StackPanel>
+                </UniformGrid>
+            </Grid>
         </Border>
 
         <Grid Grid.Row="2">

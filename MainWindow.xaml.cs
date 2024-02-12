@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Configuration;
-using System.Data;
+﻿using System.ComponentModel;
 using System.IO;
 using System.Reflection;
-using System.Security.Cryptography.X509Certificates;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -25,13 +21,21 @@ namespace UniversalTelemetryReplay
         private readonly string configurationsFileName = @"\configurations.json";
         internal static SettingsFile<Settings>? settingsFile;
         internal static ConfigurationManager<MessageConfiguration>? configManager;
-        private readonly double selectedPlaybackSpeed = 0;
+        private double playbackSpeed = 0;
+        private double startTime = 0;
+        private double endTime = 0;
 
         /// Views
         private View currentView;
         static private Pages.Configure  configureView;
         static private Pages.Replay     replayView;
         static private Pages.Settings   settingsView;
+
+        /// Threads
+        Thread replayThread;
+        Thread monitorThread;
+        private ManualResetEvent stopSignal = new(false);
+        private ManualResetEvent pauseSignal = new(false);
 
         public enum View
         {
@@ -49,13 +53,54 @@ namespace UniversalTelemetryReplay
             Stopped,
         }
 
-        public enum ParseStatus
+        public enum LogStatus
         {
             Unparsed,
             Parsing,
             Found,
             NotFound,
             Skipped,
+            Playing,
+            Finished,
+        }
+
+        public enum ErrorReason
+        {
+            None,
+            NoFileSelected,
+            NoMessageSize,
+            NotEnoughSyncBytes,
+            NotEnoughEndBytes,
+            NoTimestampLocation,
+            NoTimestampSize,
+        }
+
+        public enum ParseLimit
+        {
+            [Description("None")]
+            None,
+            [Description("10%")]
+            Percent10,
+            [Description("25%")]
+            Percent25,
+            [Description("1 Message")]
+            OneMessage,
+            [Description("5 Messages")]
+            FiveMessages,
+            [Description("10 Messages")]
+            TenMessages,
+        }
+
+        public enum ReplayLimit
+        {
+            [Description("1")]
+            One = 1,
+            [Description("5")]
+            Five = 5,
+            [Description("10")]
+            Ten = 10,
+            [Description("20")]
+            Twenty = 20,
         }
 
         readonly List<string> SpeedOptions =
@@ -106,6 +151,8 @@ namespace UniversalTelemetryReplay
             // Update things based on settings.
             ThemeController.SetTheme(settingsFile.data.Theme);
             settingsView.SetThemeSelection(settingsFile.data.Theme);
+            settingsView.SetParseLimitSelection(settingsFile.data.ParseLimit);
+            settingsView.SetReplayLimitSelection(settingsFile.data.ReplayLimit);
 
             // Attempt to load configurations
             string configFilePath = programDataPath + configurationsFileName;
@@ -157,7 +204,7 @@ namespace UniversalTelemetryReplay
 
         private void MenuButton_Click(object sender, RoutedEventArgs e)
         {
-            Button clickedButton = sender as Button;
+            if (sender is not Button clickedButton) return;
 
             if (clickedButton == ConfigurationsViewButton)
             {
@@ -177,11 +224,31 @@ namespace UniversalTelemetryReplay
             {
                 if (clickedButton == LoadButton)
                 {
+                    replayView.UpdateAddButton(true);
+
                     Task.Run(() =>
                     {
                         if (ParseSelectedLogs())
                         {
-                            Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Loaded));
+                            Dispatcher.Invoke(() =>
+                            {
+                                UpdatePlaybackControls(PlayBackStatus.Loaded);
+
+                                // Get our starting and ending time points
+                                foreach (LogItem log in replayView.logItems)
+                                {
+                                    if(log != null)
+                                    {
+                                        if (startTime == 0 || log.StartTime < startTime) startTime = log.StartTime;
+                                        if (endTime == 0 || log.EndTime > endTime) endTime = log.EndTime;
+                                    }
+                                }
+
+                                // Update UI items with 2 decimal places precision
+                                ReplayStartTime.Text = startTime.ToString("F2");
+                                ReplayEndTime.Text = endTime.ToString("F2");
+
+                            });
                         }
                         else
                         {
@@ -191,38 +258,62 @@ namespace UniversalTelemetryReplay
                 }
                 else if (clickedButton == RestartButton)
                 {
-                    // Handle RestartButton click
+                    // Reset the signals
+                    stopSignal.Reset();
+                    pauseSignal.Reset();
 
+                    // Start the replay
+                    StartReplay();
+
+                    // Update UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == PlayButton)
                 {
-                    // Handle PlayButton click
+                    // Start the replay
+                    StartReplay();
 
+                    // Update UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == PauseButton)
                 {
-                    // Handle PauseButton click
+                    // Set the pauseSignal
+                    pauseSignal.Set();
 
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Paused);
                 }
                 else if (clickedButton == ResumeButton)
                 {
-                    // Handle PlayButton click
+                    // Reset the pauseSignal
+                    pauseSignal.Reset();
 
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Started);
                 }
                 else if (clickedButton == StopButton)
                 {
-                    // Handle StopButton click
+                    // Signal the threads to stop.
+                    stopSignal.Set();
 
+                    // Wait for both threads to finish
+                    replayThread?.Join();
+                    monitorThread?.Join();
+
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Stopped);
                 }
                 else if (clickedButton == ResetButton)
                 {
-                    // Handle ResetButton click
+                    // Reset the signals
+                    stopSignal.Reset();
+                    pauseSignal.Reset();
 
+                    // Unlock the add button
+                    replayView.UpdateAddButton(false);
+
+                    // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Unloaded);
                 }
             }
@@ -313,6 +404,11 @@ namespace UniversalTelemetryReplay
                 {
                     settingsFile.data.PlaybackSpeed = speed;
                     settingsFile.Save();
+
+                    // Try to parse the speed string to a double else set default. 
+                    string speedWithoutSuffix = speed.Replace("x", "");
+                    if (double.TryParse(speedWithoutSuffix, out double outSpeed)) playbackSpeed = outSpeed;
+                    else playbackSpeed = 1.0;
                 }
             }
             else
@@ -322,7 +418,7 @@ namespace UniversalTelemetryReplay
             }
         }
 
-        private bool ParseSelectedLogs()
+        private static bool ParseSelectedLogs()
         {
             // Preventive check
             if (configManager == null || configManager.GetData() == null) return false;
@@ -334,12 +430,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // Set status to parsing
-                UpdateParseStatus(ParseStatus.Parsing, log);
+                UpdateLogStatus(LogStatus.Parsing, log);
 
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    UpdateParseStatus(ParseStatus.Skipped, log);
+                    UpdateLogStatus(LogStatus.Skipped, log);
                     continue;
                 }
 
@@ -347,7 +443,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    UpdateParseStatus(ParseStatus.NotFound, log);
+                    UpdateLogStatus(LogStatus.NotFound, log);
                 }
                 else success++;
             }
@@ -369,21 +465,23 @@ namespace UniversalTelemetryReplay
                 if (File.Exists(log.FilePath))
                 {
                     using FileStream fileStream = File.Open(log.FilePath, FileMode.Open);
-                    const int MaxParse = 0;
+                    long fileSize = fileStream.Length;
                     int numRead = 0;
+                    long totalRead = 0;
                     int bytesInBuffer = 0;
                     byte[] buffer = new byte[config.MessageSize];
+                    bool foundStart = false;
 
                     while ((numRead = fileStream.Read(buffer, bytesInBuffer, buffer.Length - bytesInBuffer)) > 0)
                     {
                         bytesInBuffer += numRead;
+                        totalRead += numRead;
 
                         // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
 
-                        // loop through data to find a message that matches a configuration
-                        int i = 0;
-                        for (i = 0; i <= bytesInBuffer - config.MessageSize; i++)
+                        // Loop through data to find a message that matches a configuration
+                        for (int i = 0; i <= bytesInBuffer - config.MessageSize; i++)
                         {
                             if (buffer[i + 0] == config.SyncByte1 &&
                                 buffer[i + 1] == config.SyncByte2 &&
@@ -392,17 +490,89 @@ namespace UniversalTelemetryReplay
                                 buffer[i + config.MessageSize - 2] == config.EndByte1 &&
                                 (config.EndByte2 == 0 || buffer[i + config.MessageSize - 1] == config.EndByte2))
                             {
-                                // Set the config index and then update the status
-                                log.ConfigIndex = config.RowIndex;
-                                UpdateParseStatus(ParseStatus.Found, log);
-                                return true;
+                                bytesInBuffer -= (int)config.MessageSize;
+
+                                if (!foundStart)
+                                {
+                                    // Set the config index and then update the status
+                                    log.ConfigIndex = config.RowIndex;
+
+                                    // Get the start times
+                                    log.StartTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+
+                                    foundStart = true;
+                                }
+                                else
+                                {
+                                    // Get the end times
+                                    log.EndTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+                                }
+
                             }
+                            //else
+                            //{
+                            //    bytesInBuffer--;
+                            //}
                         }
+
+                        // If we havent found a message, and
+                        // if the parse limit has been reached - break out
+                        if (settingsFile != null && settingsFile.data != null)
+                        {
+                            if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, config, totalRead, fileSize)) break;
+                        }
+
+                        //// If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
+                        //if (bytesInBuffer != 0)
+                        //{
+                        //    Array.Copy(buffer, buffer.Length - bytesInBuffer, buffer, 0, bytesInBuffer);
+                        //}
+                    }
+
+                    if(log.StartTime != 0 && log.EndTime != 0)
+                    {
+                        UpdateLogStatus(LogStatus.Found, log);
+                        return true;
                     }
                 }
+            
             }
 
             return false;
+        }
+
+        private static bool IsParseLimitReached(ParseLimit limit, MessageConfiguration config, long totalRead, long fileSize)
+        {
+            double percentageParsed = totalRead / fileSize * 100;
+
+            return limit switch
+            {
+                ParseLimit.None => false,
+                ParseLimit.Percent10 => percentageParsed >= 10,
+                ParseLimit.Percent25 => percentageParsed >= 25,
+                ParseLimit.OneMessage => totalRead >= config.MessageSize,
+                ParseLimit.FiveMessages => totalRead >= (config.MessageSize * 5),
+                ParseLimit.TenMessages => totalRead >= (config.MessageSize * 10),
+                _ => false,
+            };
+        }
+
+        private static double ParseTimestamp(byte[] buffer, int offset, int timestampSize, double timestampScaling)
+        {
+            if (timestampSize == 4)
+            {
+                uint time = BitConverter.ToUInt32(buffer, offset);
+                return time / timestampScaling;
+            }
+            else if (timestampSize == 8)
+            {
+                double time = BitConverter.ToDouble(buffer, offset);
+                return time / timestampScaling;
+            }
+            else
+            {
+                return 0.0;
+            }
         }
 
         public void UpdateControls(bool visible)
@@ -413,11 +583,11 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateParseStatus(ParseStatus pStatus, LogItem log)
+        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
         {
             switch(pStatus) 
             {
-                case ParseStatus.Unparsed:
+                case LogStatus.Unparsed:
                     {
                         log.Status = "Not Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
@@ -425,7 +595,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                     }
                     break;
-                case ParseStatus.Parsing:
+                case LogStatus.Parsing:
                     {
                         log.Status = "Parsing";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
@@ -433,18 +603,18 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                     }
                     break;
-                case ParseStatus.Found:
+                case LogStatus.Found:
                     {
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
 
-                        if(log.ConfigIndex != -1 && configManager != null)
+                        if (log.ConfigIndex != -1 && configManager != null)
                             log.Configuration = configManager.GetData()[log.ConfigIndex].Name;
 
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                     }
                     break;
-                case ParseStatus.NotFound:
+                case LogStatus.NotFound:
                     {
                         log.Status = "Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
@@ -452,7 +622,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
                     }
                     break;
-                case ParseStatus.Skipped:
+                case LogStatus.Skipped:
                     {
                         log.Status = "Skipped";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
@@ -460,6 +630,66 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                     }
                     break;
+                case LogStatus.Playing:
+                    {
+                        log.Status = "Playing";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                    }
+                    break;
+                case LogStatus.Finished:
+                    {
+                        log.Status = "Finished";
+                        log.StatusBG = (Brush)Application.Current.Resources["PrimaryBlueColor"];
+                    }
+                    break;
+            }
+        }
+
+        private void StartReplay()
+        {
+            // Start the threads
+            replayThread = new(StartReplayWorker);
+            replayThread.Start();
+
+            monitorThread = new(StartReplayMonitor);
+            monitorThread.Start();
+        }
+
+        private void StartReplayWorker()
+        {
+            while (true)
+            {
+                // Check if we are paused
+                pauseSignal.WaitOne(0);
+
+                // Check if the signal is set - Indicating a stop
+                if (stopSignal.WaitOne(0))
+                {
+                    Console.WriteLine("Replay stopped.");
+                    break;
+                }
+
+                // Do some work 
+                Thread.Sleep(100);
+            }
+        }
+
+        private void StartReplayMonitor()
+        {
+            while (true)
+            {
+                // Check if we are paused
+                pauseSignal.WaitOne(0);
+
+                // Check if the signal is set - Indicating a stop
+                if (stopSignal.WaitOne(0))
+                {
+                    Console.WriteLine("Monitor stopped.");
+                    break;
+                }
+
+                // Do some work 
+                Thread.Sleep(100);
             }
         }
     }
