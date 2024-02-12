@@ -2,6 +2,7 @@
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using UniversalTelemetryReplay.Objects;
@@ -71,7 +72,7 @@ namespace UniversalTelemetryReplay.Pages
             }
 
             // Find the parent of the TextBox
-            if (textBox.Parent is StackPanel parent)
+            if (textBox.Parent is Grid parent)
             {
                 // Find the "Update" button by its name
                 if (parent.FindName("UpdateButton") is not Button updateButton) return;
