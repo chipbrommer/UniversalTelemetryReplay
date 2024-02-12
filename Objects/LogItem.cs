@@ -22,6 +22,9 @@ namespace UniversalTelemetryReplay.Objects
         private double _playbackAmountComplete = 0;
         public bool _pathSelected = false;
         public int _configIndex = -1;
+        private Brush _logColor = Brushes.White;
+        private bool _readyForReplay = false;
+        private int _totalPackets = 0;
 
         public int Id
         {
@@ -110,6 +113,24 @@ namespace UniversalTelemetryReplay.Objects
         {
             get { return _configIndex; }
             set { _configIndex = value; OnPropertyChanged(nameof(ConfigIndex)); }
+        }
+
+        public Brush LogColor
+        {
+            get { return _logColor; }
+            set { _logColor = value; OnPropertyChanged(nameof(LogColor)); }
+        }
+
+        public bool ReadyForReplay
+        {
+            get { return _readyForReplay; }
+            set { _readyForReplay = value; OnPropertyChanged(nameof(ReadyForReplay)); }
+        }
+
+        public int TotalPackets
+        {
+            get { return _totalPackets; }
+            set { _totalPackets = value; OnPropertyChanged(nameof(TotalPackets)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

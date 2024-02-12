@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Shapes;
 using UniversalTelemetryReplay.Controls;
 using UniversalTelemetryReplay.Objects;
 
@@ -115,6 +116,20 @@ namespace UniversalTelemetryReplay
             "5x"
         ];
 
+        public static List<Brush> ItemMappingBrushColors = new List<Brush>
+        {
+            Brushes.Red,
+            Brushes.Blue,
+            Brushes.Green,
+            Brushes.Yellow,
+            Brushes.Orange,
+            Brushes.Purple,
+            Brushes.Cyan,
+            Brushes.Magenta,
+            Brushes.Brown,
+            Brushes.Gray
+        };
+
         public MainWindow()
         {
             InitializeComponent();
@@ -132,7 +147,7 @@ namespace UniversalTelemetryReplay
             // Set the title of the MainWindow with the assembly version
             Title = $"Universal Telemetry Replay v{version}";
 
-            programDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), companyFolder, applicationFolder);
+            programDataPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), companyFolder, applicationFolder);
 
             // Ensure the ProgramData folder exists, create it if not
             if (!Directory.Exists(programDataPath))
@@ -235,21 +250,7 @@ namespace UniversalTelemetryReplay
                             Dispatcher.Invoke(() =>
                             {
                                 UpdatePlaybackControls(PlayBackStatus.Loaded);
-
-                                // Get our starting and ending time points
-                                foreach (LogItem log in replayView.logItems)
-                                {
-                                    if(log != null)
-                                    {
-                                        if (startTime == 0 || log.StartTime < startTime) startTime = log.StartTime;
-                                        if (endTime == 0 || log.EndTime > endTime) endTime = log.EndTime;
-                                    }
-                                }
-
-                                // Update UI items with 2 decimal places precision
-                                ReplayStartTime.Text = startTime.ToString("F2");
-                                ReplayEndTime.Text = endTime.ToString("F2");
-
+                                UpdateReplayContent();
                             });
                         }
                         else
@@ -311,6 +312,8 @@ namespace UniversalTelemetryReplay
                     // Reset the signals
                     stopSignal.Reset();
                     pauseSignal.Reset();
+                    startTime = 0;
+                    endTime = 0;
 
                     // Unlock the add button
                     replayView.UpdateAddButton(false);
@@ -325,6 +328,7 @@ namespace UniversalTelemetryReplay
                 {
                     settingsFile.data.ConcurrentPlaybackEnabled = toggleButton.IsChecked ?? false;
                     settingsFile.Save();
+                    UpdateSliderLogAccents();
                 }
             }
         }
@@ -488,15 +492,15 @@ namespace UniversalTelemetryReplay
                     byte[] buffer = new byte[config.MessageSize];
                     bool foundStart = false;
 
+                    // Capture what index this log is. 
+                    int logIndex = replayView.logItems.IndexOf(log);
+
                     while ((numRead = fileStream.Read(buffer, bytesInBuffer, buffer.Length - bytesInBuffer)) > 0)
                     {
                         bytesInBuffer += numRead;
 
                         // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
-
-                        // Capture what index this log is. 
-                        int logIndex = replayView.logItems.IndexOf(log);
 
                         // Loop through data to find a message that matches a configuration
                         for (int i = 0; i <= bytesInBuffer - config.MessageSize; i++)
@@ -567,6 +571,8 @@ namespace UniversalTelemetryReplay
                     if(log.StartTime != 0 && log.EndTime != 0)
                     {
                         UpdateLogStatus(LogStatus.Found, log);
+                        log.ReadyForReplay = true;
+                        log.TotalPackets = tmMessages[logIndex].Count();
                         return true;
                     }
                 }
@@ -725,6 +731,116 @@ namespace UniversalTelemetryReplay
 
                 // Do some work 
                 Thread.Sleep(100);
+            }
+        }
+
+        public void UpdateReplayContent()
+        {
+            if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
+            {
+                LogItem? longestLog = null;
+                double longestDuration = 0;
+
+                // Find the longest file
+                foreach (LogItem log in replayView.logItems)
+                {
+                    if (log != null && log.ReadyForReplay)
+                    {
+                        double duration = log.EndTime - log.StartTime;
+                        if (duration > longestDuration)
+                        {
+                            longestDuration = duration;
+                            longestLog = log;
+                        }
+                    }
+                }
+
+                //// Update start and end to be a percentage
+                //ReplayStartTime.Text = "0 %";
+                //ReplayEndTime.Text = "100 %";
+                //ReplaySlider.Minimum = 0;
+                //ReplaySlider.Maximum = 100;
+                //ReplaySlider.Value = 0;
+
+                //// Update the start and end time with the longest file's start and end times
+                //if (longestLog != null)
+                //{
+                //    startTime = longestLog.StartTime;
+                //    endTime = longestLog.EndTime;
+                //    ReplaySlider.Minimum = startTime;
+                //    ReplaySlider.Maximum = endTime;
+                //}
+            }
+            else
+            {
+                // Get our starting and ending time points
+                foreach (LogItem log in replayView.logItems)
+                {
+                    if (log != null && log.ReadyForReplay)
+                    {
+                        if (startTime == 0 || log.StartTime < startTime) startTime = log.StartTime;
+                        if (endTime == 0 || log.EndTime > endTime) endTime = log.EndTime;
+                    }
+                }
+
+                // Update UI items with 2 decimal places precision
+                ReplayStartTime.Text = startTime.ToString("F2");
+                ReplayEndTime.Text = endTime.ToString("F2");
+                ReplaySlider.Minimum = startTime;
+                ReplaySlider.Maximum = endTime;
+            }
+
+            // Update the accents for the slider
+            UpdateSliderLogAccents();
+        }
+
+        private void UpdateSliderLogAccents()
+        {
+            // Clear any existing lines from the canvas
+            LogLinesCanvas.Children.Clear();
+
+            // Calculate the width of the canvas
+            double canvasWidth = LogLinesCanvas.ActualWidth;
+
+            // Define a variable to keep track of the vertical position of each line
+            double currentY = 0;
+
+            // Draw lines for each log item
+            foreach (LogItem log in replayView.logItems)
+            {
+                if (log != null)
+                {
+                    // Perform calculations for a time based replay, starting with the logs start and end time. 
+                    double logStartTime = log.StartTime;
+                    double logEndTime = log.EndTime;
+
+                    // Calculate positions for the start and end points of the line
+                    double startX = (logStartTime - startTime) / (endTime - startTime) * canvasWidth;
+                    double endX = (logEndTime - startTime) / (endTime - startTime) * canvasWidth;
+
+                    // If its a concurrent style replay, show all lines on the far left. 
+                    if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
+                    {
+                        startX = 0;
+                    }
+
+                    // Create and configure a Line shape
+                    Line line = new()
+                    {
+                        X1 = startX,
+                        Y1 = currentY, // Set Y1 to current vertical position
+                        X2 = endX,
+                        Y2 = currentY, // Set Y2 to current vertical position
+                        Stroke = log.LogColor,
+                        StrokeThickness = 2
+                    };
+
+                    // Increment the vertical position for the next line
+                    currentY += 5;
+
+                    // Add the line to the Canvas
+                    LogLinesCanvas.Children.Add(line);
+                }
             }
         }
     }

@@ -80,6 +80,10 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Grid.Column="0" Text="IP:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
@@ -89,6 +93,10 @@
                                                 <TextBox Grid.Column="3" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
                                                       Margin="5" Width="50" VerticalAlignment="Center" TextAlignment="Center"
                                                       PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged"/>
+                                                <TextBlock Grid.Column="4" Text="Item Color:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <Ellipse Grid.Column="5" Width="18" Height="18" Margin="5" Fill="{Binding LogColor}" />
+                                                <TextBlock Grid.Column="6" Text="Total Packets:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBlock Grid.Column="7" Text="{Binding TotalPackets}" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                             </Grid>
                                         </UniformGrid>
 

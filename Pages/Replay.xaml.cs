@@ -5,6 +5,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using UniversalTelemetryReplay.Objects;
+using static UniversalTelemetryReplay.MainWindow;
 
 namespace UniversalTelemetryReplay.Pages
 {
@@ -15,12 +16,14 @@ namespace UniversalTelemetryReplay.Pages
     {
         public readonly ObservableCollection<LogItem> logItems;
         readonly MainWindow mw;
+        static bool addButtonLocked;
 
         public Replay(MainWindow main)
         {
             InitializeComponent();
             logItems = [];
             mw = main;
+            addButtonLocked = false;
 
             // Set DataContext to logItems for binding
             DataContext = logItems;
@@ -35,7 +38,7 @@ namespace UniversalTelemetryReplay.Pages
             // Add a new log item to the logItems collection
             logItems.Add(new LogItem()
             {
-                Id = LogItem.NEXT_ID++,
+                Id = LogItem.NEXT_ID,
                 Configuration = "Unknown",
                 ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"],
                 FilePath = "Not Selected",
@@ -43,7 +46,10 @@ namespace UniversalTelemetryReplay.Pages
                 StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"],
                 IpAddress = "127.0.0.1",
                 Port = 5700,
+                LogColor = MainWindow.ItemMappingBrushColors[LogItem.NEXT_ID],
             });
+
+            LogItem.NEXT_ID++;
 
             UpdateAddButton();
         }
@@ -114,7 +120,9 @@ namespace UniversalTelemetryReplay.Pages
 
         public void UpdateAddButton(bool locked = false)
         {
-            if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null) return;
+            addButtonLocked = locked;
+
+            if (MainWindow.settingsFile == null || MainWindow.settingsFile.data == null ) return;
 
             // If we are at maximum items, disable button. 
             if (logItems.Count >= (int)MainWindow.settingsFile.data.ReplayLimit)
@@ -166,6 +174,13 @@ namespace UniversalTelemetryReplay.Pages
                     int index = logItems.IndexOf(logItem);
                     logItems[index].FilePath = selectedFilePath;
                     logItems[index].PathSelected = true;
+                    logItems[index].StartTime = 0;
+                    logItems[index].EndTime = 0;
+                    logItems[index].TotalPackets = 0;
+                    logItems[index].ReadyForReplay = false;
+
+                    // Set status to parsing
+                    UpdateLogStatus(LogStatus.Unparsed, logItems[index]);
                 }
             }
         }
@@ -201,15 +216,17 @@ namespace UniversalTelemetryReplay.Pages
             // Get the data context of the button, which is the item in the list
             if (removeButton.DataContext != null)
             {
-                LogItem itemToRemove = removeButton.DataContext as LogItem;
-
                 // Assuming your ItemsSource is an ObservableCollection, you can remove the item
-                if (logItems is ObservableCollection<LogItem> observableCollection)
+                if (logItems is ObservableCollection<LogItem> observableCollection && removeButton.DataContext is LogItem itemToRemove)
                 {
                     observableCollection.Remove(itemToRemove);
-                }
 
-                UpdateAddButton();
+                    // Update the add button if its not locked
+                    if (!addButtonLocked) UpdateAddButton();
+
+                    // Update the slider log indications
+                    mw.UpdateReplayContent();
+                }
             }
         }
     }
