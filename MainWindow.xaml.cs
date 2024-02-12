@@ -24,6 +24,7 @@ namespace UniversalTelemetryReplay
         private double playbackSpeed = 0;
         private double startTime = 0;
         private double endTime = 0;
+        private List<List<TelemetryMessage>> tmMessages;
 
         /// Views
         private View currentView;
@@ -117,6 +118,7 @@ namespace UniversalTelemetryReplay
         public MainWindow()
         {
             InitializeComponent();
+            tmMessages = [];
 
             configureView = new();
             replayView = new(this);
@@ -418,7 +420,7 @@ namespace UniversalTelemetryReplay
             }
         }
 
-        private static bool ParseSelectedLogs()
+        private bool ParseSelectedLogs()
         {
             // Preventive check
             if (configManager == null || configManager.GetData() == null) return false;
@@ -429,6 +431,20 @@ namespace UniversalTelemetryReplay
             // Attempt the parse the logs
             foreach(LogItem log in replayView.logItems) 
             {
+                // Initialize the inner list if it hasn't been initialized yet
+                int logIndex = replayView.logItems.IndexOf(log);
+
+                // Ensure tmMessages has enough elements to accommodate logIndex
+                while (tmMessages.Count <= logIndex)
+                {
+                    tmMessages.Add([]);
+                }
+                // preventive check against null
+                if (tmMessages[logIndex] == null)
+                {
+                    tmMessages.Add([]);
+                }
+
                 // Set status to parsing
                 UpdateLogStatus(LogStatus.Parsing, log);
 
@@ -453,7 +469,7 @@ namespace UniversalTelemetryReplay
             else return true;
         }
 
-        private static bool ParseConfigurations(LogItem log)
+        private bool ParseConfigurations(LogItem log)
         {
             // Preventive Check
             if (configManager == null) return false;
@@ -475,10 +491,12 @@ namespace UniversalTelemetryReplay
                     while ((numRead = fileStream.Read(buffer, bytesInBuffer, buffer.Length - bytesInBuffer)) > 0)
                     {
                         bytesInBuffer += numRead;
-                        totalRead += numRead;
 
                         // Make sure we have enough bytes for a full message
                         if (bytesInBuffer < config.MessageSize) continue;
+
+                        // Capture what index this log is. 
+                        int logIndex = replayView.logItems.IndexOf(log);
 
                         // Loop through data to find a message that matches a configuration
                         for (int i = 0; i <= bytesInBuffer - config.MessageSize; i++)
@@ -500,12 +518,26 @@ namespace UniversalTelemetryReplay
                                     // Get the start times
                                     log.StartTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
 
+                                    // Capture the start time and memory location to the list
+                                    tmMessages[logIndex].Add(new TelemetryMessage
+                                    {
+                                        MemoryLocation = totalRead+i,
+                                        Timestamp = log.StartTime,
+                                    });
+
                                     foundStart = true;
                                 }
                                 else
                                 {
                                     // Get the end times
                                     log.EndTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+
+                                    // Capture the new log memory location and add to the list
+                                    tmMessages[logIndex].Add(new TelemetryMessage
+                                    {
+                                        MemoryLocation = totalRead + i,
+                                        Timestamp = log.EndTime,
+                                    });
                                 }
 
                             }
@@ -514,6 +546,9 @@ namespace UniversalTelemetryReplay
                             //    bytesInBuffer--;
                             //}
                         }
+
+                        // Update the total bytes Read
+                        totalRead += numRead;
 
                         // If we havent found a message, and
                         // if the parse limit has been reached - break out
