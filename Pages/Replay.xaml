@@ -61,14 +61,6 @@
 
                                     <!-- Conent -->
                                     <StackPanel Grid.Column="1">
-                                        <Grid>
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="3*"/>
-                                                <RowDefinition Height="3*"/>
-                                                <RowDefinition Height="4*"/>
-                                            </Grid.RowDefinitions>
-                                        </Grid>
-
                                         <UniformGrid Rows="0">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
@@ -91,7 +83,8 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Grid.Column="0" Text="IP:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Center" />
+                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Center" 
+                                                         TextChanged="IpAddressTextBox_TextChanged" />
                                                 <TextBlock Grid.Column="2" Text="Port:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                                 <TextBox Grid.Column="3" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
                                                       Margin="5" Width="50" VerticalAlignment="Center" TextAlignment="Center"

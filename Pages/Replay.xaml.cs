@@ -48,6 +48,33 @@ namespace UniversalTelemetryReplay.Pages
             UpdateAddButton();
         }
 
+        private void IpAddressTextBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (sender is not TextBox textBox) return;
+
+            // Limit the length of the input to 15 characters
+            if (textBox.Text.Length > 15)
+            {
+                textBox.Text = textBox.Text[..15];
+                // Set the caret position to the end
+                textBox.CaretIndex = 15;
+            }
+
+            // Find the parent of the TextBox
+            if (textBox.Parent is Grid parent)
+            {
+                // Find the "Update" button by its name
+                if (parent.FindName("UpdateButton") is not Button updateButton) return;
+
+                // Enable/disable the "Update" button based on the Port TextBox's text
+                // hide it if the port is empty to prevent the update. 
+                if (!string.IsNullOrEmpty(textBox.Text))
+                    updateButton.Visibility = Visibility.Visible;
+                else
+                    updateButton.Visibility = Visibility.Hidden;
+            }
+        }
+
         private void PortTextBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             // Check if the input is numeric
@@ -83,7 +110,6 @@ namespace UniversalTelemetryReplay.Pages
                 else
                     updateButton.Visibility = Visibility.Hidden;
             }
-
         }
 
         public void UpdateAddButton(bool locked = false)
