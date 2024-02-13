@@ -84,10 +84,12 @@
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
                                                     <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                    <ColumnDefinition Width="Auto"/>
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Grid.Column="0" Text="IP:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Left" 
+                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="80" VerticalAlignment="Center" TextAlignment="Left" 
                                                          TextChanged="IpAddressTextBox_TextChanged" Style="{DynamicResource LockTextBox}" IsReadOnly="{Binding Locked}"/>
                                                 <TextBlock Grid.Column="2" Text="Port:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                                 <TextBox Grid.Column="3" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
@@ -95,8 +97,10 @@
                                                       PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged" Style="{DynamicResource LockTextBox}" IsReadOnly="{Binding Locked}"/>
                                                 <TextBlock Grid.Column="4" Text="Item Color:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                                 <Ellipse Grid.Column="5" Width="18" Height="18" Margin="5" Fill="{Binding LogColor}" />
-                                                <TextBlock Grid.Column="6" Text="Total Packets:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                                <TextBlock Grid.Column="7" Text="{Binding TotalPackets}" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBlock Grid.Column="6" Text="Total Packets:" Margin="5,5,2,5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBlock Grid.Column="7" Text="{Binding TotalPackets}" Margin="2,5,2,5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBlock Grid.Column="8" Text="- Replayed:" Margin="2,5,2,5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                                <TextBlock Grid.Column="9" Text="{Binding ReplayedPackets}" Margin="2,5,5,5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                             </Grid>
                                         </UniformGrid>
 
@@ -113,8 +117,8 @@
                                                         <Binding Path="StartTime" StringFormat="{}{0:F2}" />
                                                     </TextBlock.Text>
                                                 </TextBlock>
-                                                <Slider Grid.Column="1" Minimum="0" Maximum="100" Value="{Binding PlaybackAmountComplete}" VerticalAlignment="Center" 
-                                                        TickPlacement="None" Margin="5" IsEnabled="False"/>
+                                                <Slider Grid.Column="1" Minimum="0" Maximum="1" Value="{Binding PlaybackAmountComplete}" VerticalAlignment="Center" 
+                                                        TickPlacement="None" Margin="5"/>
                                                 <TextBlock Grid.Column="2" VerticalAlignment="Center" HorizontalAlignment="Right"
                                                         TextAlignment="Center" Margin="5,0,5,0" Width="60" Foreground="{DynamicResource TextSecondaryColor}">
                                                     <TextBlock.Text>

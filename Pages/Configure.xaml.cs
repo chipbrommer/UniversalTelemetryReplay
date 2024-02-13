@@ -242,16 +242,16 @@ namespace UniversalTelemetryReplay.Pages
             if (ConfigurationsDataGrid.SelectedItem is MessageConfiguration selectedConfiguration)
             {
                 NameTextBox.Text = selectedConfiguration.Name;
-                SyncByte1TextBox.Text = selectedConfiguration.SyncByte1.ToString();
-                SyncByte2TextBox.Text = selectedConfiguration.SyncByte2.ToString();
-                SyncByte3TextBox.Text = selectedConfiguration.SyncByte3.ToString();
-                SyncByte4TextBox.Text = selectedConfiguration.SyncByte4.ToString();
+                SyncByte1TextBox.Text = "0x" + selectedConfiguration.SyncByte1.ToString("X2");
+                SyncByte2TextBox.Text = "0x" + selectedConfiguration.SyncByte2.ToString("X2");
+                SyncByte3TextBox.Text = "0x" + selectedConfiguration.SyncByte3.ToString("X2");
+                SyncByte4TextBox.Text = "0x" + selectedConfiguration.SyncByte4.ToString("X2");
                 MessageSizeTextBox.Text = selectedConfiguration.MessageSize.ToString();
                 TimestampSizeTextBox.Text = selectedConfiguration.TimestampSize.ToString();
                 TimestampOffsetTextBox.Text = selectedConfiguration.TimestampByteOffset.ToString();
                 TimestampScalingTextBox.Text = selectedConfiguration.TimestampScaling.ToString();
-                EndByte1TextBox.Text = selectedConfiguration.EndByte1.ToString();
-                EndByte2TextBox.Text = selectedConfiguration.EndByte2.ToString();
+                EndByte1TextBox.Text = "0x" + selectedConfiguration.EndByte1.ToString("X2");
+                EndByte2TextBox.Text = "0x" + selectedConfiguration.EndByte2.ToString("X2");
                 IndexTextBox.Text = selectedConfiguration.RowIndex.ToString();
             }
         }

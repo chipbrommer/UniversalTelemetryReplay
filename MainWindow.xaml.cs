@@ -27,6 +27,7 @@ namespace UniversalTelemetryReplay
         private double playbackSpeed = 0;
         private double startTime = 0;
         private double endTime = 0;
+        private double replayStartTime = 0;
         public PlayBackStatus currentStatus = PlayBackStatus.Unloaded;
         private List<List<TelemetryMessage>> tmMessages;
 
@@ -38,7 +39,6 @@ namespace UniversalTelemetryReplay
 
         /// Threads
         Thread replayThread;
-        Thread monitorThread;
         private ManualResetEvent stopSignal = new(false);
         private ManualResetEvent pauseSignal = new(false);
 
@@ -67,17 +67,6 @@ namespace UniversalTelemetryReplay
             Skipped,
             Playing,
             Finished,
-        }
-
-        public enum ErrorReason
-        {
-            None,
-            NoFileSelected,
-            NoMessageSize,
-            NotEnoughSyncBytes,
-            NotEnoughEndBytes,
-            NoTimestampLocation,
-            NoTimestampSize,
         }
 
         public enum ParseLimit
@@ -288,6 +277,13 @@ namespace UniversalTelemetryReplay
                     stopSignal.Reset();
                     pauseSignal.Reset();
 
+                    // Reset the logs completion info
+                    foreach (LogItem log in replayView.logItems)
+                    {
+                        log.ReplayedPackets = 0;
+                        log.PlaybackAmountComplete = 0;
+                    }
+
                     // Start the replay
                     StartReplay();
 
@@ -323,9 +319,8 @@ namespace UniversalTelemetryReplay
                     // Signal the threads to stop.
                     stopSignal.Set();
 
-                    // Wait for both threads to finish
+                    // Wait for threads to finish
                     replayThread?.Join();
-                    monitorThread?.Join();
 
                     // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Stopped);
@@ -343,6 +338,8 @@ namespace UniversalTelemetryReplay
                         log.Locked = false;
                         log.Notify = false;
                         log.Notification = "";
+                        log.ReplayedPackets = 0;
+                        log.PlaybackAmountComplete = 0;
                     }
 
                     // Unlock the add button
@@ -380,6 +377,7 @@ namespace UniversalTelemetryReplay
                     StopButton.Visibility = Visibility.Collapsed;
                     ResetButton.Visibility = Visibility.Collapsed;
                     PlaybackStyleButton.IsEnabled = true;
+
                     break;
                 case PlayBackStatus.Loaded:
                     LoadButton.Visibility = Visibility.Collapsed;
@@ -419,7 +417,7 @@ namespace UniversalTelemetryReplay
                     ResumeButton.Visibility = Visibility.Collapsed;
                     StopButton.Visibility = Visibility.Collapsed;
                     ResetButton.Visibility = Visibility.Visible;
-                    PlaybackStyleButton.IsEnabled = false;
+                    PlaybackStyleButton.IsEnabled = true;
                     break;
             }
         }
@@ -493,8 +491,7 @@ namespace UniversalTelemetryReplay
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
-                    SetLogNotification(log, true, "No specified filepath");
-                    UpdateLogStatus(LogStatus.Skipped, log);
+                    UpdateLogStatus(LogStatus.Skipped, log, "No File Selected");
                     continue;
                 }
 
@@ -502,8 +499,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
-                    SetLogNotification(log, true, "No matching configuration within limit");
-                    UpdateLogStatus(LogStatus.NotFound, log);
+                    UpdateLogStatus(LogStatus.NotFound, log, "No Matching Configuration Found Within Specified Limit");
                 }
                 else success++;
             }
@@ -664,7 +660,7 @@ namespace UniversalTelemetryReplay
                 ControlsGrid.Visibility = Visibility.Hidden;
         }
 
-        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, ErrorReason error = ErrorReason.None)
+        public static void UpdateLogStatus(LogStatus pStatus, LogItem log, string error = "")
         {
             switch(pStatus) 
             {
@@ -674,6 +670,8 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                         log.Configuration = "Unknown";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
+                        log.Notify = false;
+                        log.Notification = "";
                     }
                     break;
                 case LogStatus.Parsing:
@@ -682,6 +680,8 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Configuration = "Parsing";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+                        log.Notify = false;
+                        log.Notification = "";
                     }
                     break;
                 case LogStatus.Found:
@@ -693,6 +693,12 @@ namespace UniversalTelemetryReplay
                             log.Configuration = configManager.GetData()[log.ConfigIndex].Name;
 
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+
+                        if(error != string.Empty)
+                        {
+                            log.Notification = error;
+                            log.Notify = true;
+                        }
                     }
                     break;
                 case LogStatus.NotFound:
@@ -701,6 +707,12 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
                         log.Configuration = "Not Found";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryRedColor"];
+
+                        if (error != string.Empty)
+                        {
+                            log.Notification = error;
+                            log.Notify = true;
+                        }
                     }
                     break;
                 case LogStatus.Skipped:
@@ -709,18 +721,29 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Configuration = "Unknown";
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
+
+                        if (error != string.Empty)
+                        {
+                            log.Notification = error;
+                            log.Notify = true;
+                        }
                     }
                     break;
                 case LogStatus.Playing:
                     {
                         log.Status = "Playing";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
+                        log.Notify = false;
+                        log.Notification = "";
                     }
                     break;
                 case LogStatus.Finished:
                     {
                         log.Status = "Finished";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryBlueColor"];
+                        log.Notify = false;
+                        log.Notification = "";
+                        log.IsReplayComplete = true;
                     }
                     break;
             }
@@ -728,20 +751,19 @@ namespace UniversalTelemetryReplay
 
         private void StartReplay()
         {
-            // Start the threads
+            // Start the replay thread
             replayThread = new(StartReplayWorker);
             replayThread.Start();
-
-            monitorThread = new(StartReplayMonitor);
-            monitorThread.Start();
         }
 
         private void StartReplayWorker()
         {
             UdpClient udp = new() { EnableBroadcast = true };
             List<IPEndPoint> logEndpoints = [];
-            List<double> logLastSentTimestamp = [];
             List<FileStream> logFileStreams = [];
+
+            ///<summary> Tuple (tmMessage index, tmMessage timestamp, last send time)</summary>
+            List<Tuple<int,double, MonotonicTimestamp>> logLastSent = [];
 
             try
             {
@@ -749,11 +771,17 @@ namespace UniversalTelemetryReplay
                 foreach (LogItem log in replayView.logItems)
                 {
                     logEndpoints.Add(new IPEndPoint(IPAddress.Parse(log.IpAddress), log.Port));
-                    logLastSentTimestamp.Add(0.0);
+                    logLastSent.Add(new Tuple<int, double, MonotonicTimestamp>(-1, 0.0, MonotonicTimestamp.Now()));
                     logFileStreams.Add(File.Open(log.FilePath, FileMode.Open));
                 }
 
-                while (true)
+                // Log the start time
+                replayStartTime = startTime;
+
+                bool replayComplete = false;
+                MonotonicTimestamp lastSentTime = MonotonicTimestamp.Now();
+
+                while (!replayComplete)
                 {
                     // Check if we are paused
                     pauseSignal.WaitOne(0);
@@ -765,17 +793,69 @@ namespace UniversalTelemetryReplay
                         break;
                     }
 
-                    // when time to send
+                    // For each log in the list, check if time to send
                     foreach(LogItem log in replayView.logItems)
                     {
-                        // Capture what index this log is. 
-                        int logIndex = replayView.logItems.IndexOf(log);
+                        if (!log.IsReplayComplete)
+                        {
+                            // Capture what index this log is. 
+                            int logIndex = replayView.logItems.IndexOf(log);
+                            TelemetryMessage msg = tmMessages[logIndex][0];
 
-                        // SEND SOME DATA BASED ON REPLAY TYPE
+                            // Preventive check
+                            if (configManager == null) return;
 
-                        // PLACEHOLDER 
-                        int numSent = 0;
-                        log.PlaybackAmountComplete = numSent / log.TotalPackets;
+                            // Get the config and make sure its not null
+                            MessageConfiguration config = configManager.GetData()[replayView.logItems[logIndex].ConfigIndex];
+                            if (config == null) return;
+
+                            // Create a buffer to hold the message
+                            byte[] data = new byte[config.MessageSize];
+
+                            // Get the next item to be sent
+                            if (logLastSent[logIndex].Item1 != -1)
+                            {
+                                msg = tmMessages[logIndex][logLastSent[logIndex].Item1 + 1];
+                            }
+
+                            // Get the message from the memory location
+                            logFileStreams[logIndex].Seek(msg.MemoryLocation, SeekOrigin.Begin);
+                            logFileStreams[logIndex].Read(data, 0, data.Length);
+
+                            double convertedTime = 0;
+                            MonotonicTimestamp now = MonotonicTimestamp.Now();
+
+                            replayStartTime += (now - lastSentTime).TotalSeconds * playbackSpeed;
+                            convertedTime = replayStartTime;
+                            Dispatcher.Invoke(() => ReplaySlider.Value = convertedTime);
+
+                            // Continue to next item if its not time to send 
+                            if (msg.Timestamp > convertedTime) { continue; }
+
+                            // Attempt to send the message
+                            if (udp.Send(data, data.Length, logEndpoints[logIndex]) > 0)
+                            {
+                                // Update the last sent content with latest
+                                lastSentTime = now;
+                                logLastSent[logIndex] = new Tuple<int, double, MonotonicTimestamp>(logLastSent[logIndex].Item1 + 1, msg.Timestamp, lastSentTime);
+
+                                // Update the send count
+                                log.ReplayedPackets++;
+                                log.PlaybackAmountComplete = log.ReplayedPackets / log.TotalPackets;
+                            }
+
+                            // Check if the file is complete
+                            if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
+    
+                        }
+                    }
+
+                    // Check if all logs are complete, if so, break out. 
+                    int completeCount = 0;
+                    foreach (LogItem log in replayView.logItems) 
+                    { 
+                        if(log.IsReplayComplete) completeCount++;
+                        if(completeCount == replayView.logItems.Count) replayComplete = true;
                     }
 
                     // Take a breather.
@@ -792,25 +872,12 @@ namespace UniversalTelemetryReplay
                 {
                     fileStream.Close();
                 }
-            }
-        }
 
-        private void StartReplayMonitor()
-        {
-            while (true)
-            {
-                // Check if we are paused
-                pauseSignal.WaitOne(0);
-
-                // Check if the signal is set - Indicating a stop
-                if (stopSignal.WaitOne(0))
+                // Incidate stopped / finished
+                if (currentStatus != PlayBackStatus.Stopped)
                 {
-                    Console.WriteLine("Monitor stopped.");
-                    break;
+                    Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Stopped));
                 }
-
-                // Do some work 
-                Thread.Sleep(100);
             }
         }
 
@@ -930,20 +997,11 @@ namespace UniversalTelemetryReplay
                     };
 
                     // Increment the vertical position for the next line
-                    currentY += 3;
+                    currentY += 2;
 
                     // Add the line to the Canvas
                     LogLinesCanvas.Children.Add(line);
                 }
-            }
-        }
-
-        private void SetLogNotification(LogItem log, bool enabled = false, string message = "")
-        {
-            if (log != null)
-            {
-                log.Notify = enabled;
-                log.Notification = message;
             }
         }
     }

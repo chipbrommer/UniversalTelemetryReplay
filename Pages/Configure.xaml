@@ -26,16 +26,16 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding RowIndex}" Width="*"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
-                <DataGridTextColumn Header="Sync Byte 1" Binding="{Binding SyncByte1}" Width="*"/>
-                <DataGridTextColumn Header="Sync Byte 2" Binding="{Binding SyncByte2}" Width="*"/>
-                <DataGridTextColumn Header="Sync Byte 3" Binding="{Binding SyncByte3}" Width="*"/>
-                <DataGridTextColumn Header="Sync Byte 4" Binding="{Binding SyncByte4}" Width="*"/>
+                <DataGridTextColumn Header="Sync Byte 1" Binding="{Binding SyncByte1, StringFormat={}{0:X2}}" Width="*"/>
+                <DataGridTextColumn Header="Sync Byte 2" Binding="{Binding SyncByte2, StringFormat={}{0:X2}}" Width="*"/>
+                <DataGridTextColumn Header="Sync Byte 3" Binding="{Binding SyncByte3, StringFormat={}{0:X2}}" Width="*"/>
+                <DataGridTextColumn Header="Sync Byte 4" Binding="{Binding SyncByte4, StringFormat={}{0:X2}}" Width="*"/>
                 <DataGridTextColumn Header="Message Size" Binding="{Binding MessageSize}" Width="*"/>
                 <DataGridTextColumn Header="Timestamp Byte Size" Binding="{Binding TimestampSize}" Width="*"/>
                 <DataGridTextColumn Header="Timestamp Byte Offset" Binding="{Binding TimestampByteOffset}" Width="*"/>
                 <DataGridTextColumn Header="Timestamp Scaling" Binding="{Binding TimestampScaling}" Width="*"/>
-                <DataGridTextColumn Header="End Byte 1" Binding="{Binding EndByte1}" Width="*"/>
-                <DataGridTextColumn Header="End Byte 2" Binding="{Binding EndByte2}" Width="*"/>
+                <DataGridTextColumn Header="End Byte 1" Binding="{Binding EndByte1, StringFormat={}{0:X2}}" Width="*"/>
+                <DataGridTextColumn Header="End Byte 2" Binding="{Binding EndByte2, StringFormat={}{0:X2}}" Width="*"/>
             </DataGrid.Columns>
         </DataGrid>
 

@@ -8,8 +8,8 @@
         Title="Universal Telemetry Replay" 
         Height="650" 
         MinHeight="550"
-        Width="850"
-        MinWidth="820"
+        Width="900"
+        MinWidth="880"
         Background="{DynamicResource PrimaryBackgroundColor}" 
         WindowStartupLocation="CenterScreen"
         SizeChanged="Window_SizeChanged">
