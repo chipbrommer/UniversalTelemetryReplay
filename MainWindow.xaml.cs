@@ -765,7 +765,18 @@ namespace UniversalTelemetryReplay
                         break;
                     }
 
+                    // when time to send
+                    foreach(LogItem log in replayView.logItems)
+                    {
+                        // Capture what index this log is. 
+                        int logIndex = replayView.logItems.IndexOf(log);
 
+                        // SEND SOME DATA BASED ON REPLAY TYPE
+
+                        // PLACEHOLDER 
+                        int numSent = 0;
+                        log.PlaybackAmountComplete = numSent / log.TotalPackets;
+                    }
 
                     // Take a breather.
                     Thread.Sleep(1);
