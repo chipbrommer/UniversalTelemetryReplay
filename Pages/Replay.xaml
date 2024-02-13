@@ -87,12 +87,12 @@
                                                 </Grid.ColumnDefinitions>
 
                                                 <TextBlock Grid.Column="0" Text="IP:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
-                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Center" 
-                                                         TextChanged="IpAddressTextBox_TextChanged" />
+                                                <TextBox Grid.Column="1" Text="{Binding IpAddress}" Margin="5" Width="100" VerticalAlignment="Center" TextAlignment="Left" 
+                                                         TextChanged="IpAddressTextBox_TextChanged" Style="{DynamicResource LockTextBox}" IsReadOnly="{Binding Locked}"/>
                                                 <TextBlock Grid.Column="2" Text="Port:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                                 <TextBox Grid.Column="3" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}" 
-                                                      Margin="5" Width="50" VerticalAlignment="Center" TextAlignment="Center"
-                                                      PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged"/>
+                                                      Margin="5" Width="60" VerticalAlignment="Center" TextAlignment="Left"
+                                                      PreviewTextInput="PortTextBox_PreviewTextInput" MaxLength="5" TextChanged="PortTextBox_TextChanged" Style="{DynamicResource LockTextBox}" IsReadOnly="{Binding Locked}"/>
                                                 <TextBlock Grid.Column="4" Text="Item Color:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                                                 <Ellipse Grid.Column="5" Width="18" Height="18" Margin="5" Fill="{Binding LogColor}" />
                                                 <TextBlock Grid.Column="6" Text="Total Packets:" Margin="5" VerticalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>

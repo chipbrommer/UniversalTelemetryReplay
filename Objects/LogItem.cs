@@ -25,6 +25,7 @@ namespace UniversalTelemetryReplay.Objects
         private Brush _logColor = Brushes.White;
         private bool _readyForReplay = false;
         private int _totalPackets = 0;
+        private bool _locked;
 
         public int Id
         {
@@ -131,6 +132,12 @@ namespace UniversalTelemetryReplay.Objects
         {
             get { return _totalPackets; }
             set { _totalPackets = value; OnPropertyChanged(nameof(TotalPackets)); }
+        }
+
+        public bool Locked
+        {
+            get { return _locked; }
+            set { _locked = value; OnPropertyChanged(nameof(Locked)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;

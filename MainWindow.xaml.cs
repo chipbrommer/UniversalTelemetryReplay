@@ -267,6 +267,11 @@ namespace UniversalTelemetryReplay
                             {
                                 UpdatePlaybackControls(PlayBackStatus.Loaded);
                                 UpdateReplayContent();
+
+                                foreach(LogItem log in replayView.logItems)
+                                {
+                                    log.Locked = true;
+                                }
                             });
                         }
                         else
@@ -330,6 +335,11 @@ namespace UniversalTelemetryReplay
                     pauseSignal.Reset();
                     startTime = 0;
                     endTime = 0;
+
+                    foreach (LogItem log in replayView.logItems)
+                    {
+                        log.Locked = false;
+                    }
 
                     // Unlock the add button
                     replayView.UpdateAddButton(false);
