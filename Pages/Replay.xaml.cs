@@ -135,7 +135,7 @@ namespace UniversalTelemetryReplay.Pages
             else if(locked)
             {
                 AddLogItemButton.IsEnabled = false;
-                AddLogItemButton.Content = "Current Logs Loaded - Please Reset To Add More";
+                AddLogItemButton.Content = "Current Logs Parsed - Please Reset To Edit Or Add More";
             }
             else
             {
@@ -187,6 +187,8 @@ namespace UniversalTelemetryReplay.Pages
                     logItems[index].EndTime = 0;
                     logItems[index].TotalPackets = 0;
                     logItems[index].ReadyForReplay = false;
+                    logItems[index].Notification = "";
+                    logItems[index].Notify = false;
 
                     // Set status to parsing
                     UpdateLogStatus(LogStatus.Unparsed, logItems[index]);

@@ -124,12 +124,15 @@
                                             </Grid>
                                         </UniformGrid>
 
-                                        <UniformGrid x:Name="NotificationGrid" Grid.Row="1" Rows="1" Visibility="Hidden">
-                                            <Border x:Name="NotificationContent" CornerRadius="10" VerticalAlignment="Center" HorizontalAlignment="Center" Background="SlateGray" Height="24" MaxWidth="600" MinWidth="200">
-                                                <TextBlock x:Name="NotificationText" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"
-                                                    TextAlignment="Center" Text="" Foreground="White" Background="Transparent"/>
-                                            </Border>
-                                        </UniformGrid>
+                                        <Border x:Name="NotificationContent" Grid.Row="1" CornerRadius="10" VerticalAlignment="Center" HorizontalAlignment="Stretch" 
+                                                    Background="SlateGray" Height="20" Margin="5" Visibility="{Binding Notify, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontSize="14" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="10,0,10,0"
+                                                        TextAlignment="Left" Text="Notification: " Foreground="White" Background="Transparent"/>
+                                                <TextBlock x:Name="NotificationText" FontSize="14" FontWeight="Bold" VerticalAlignment="Center" HorizontalAlignment="Center"
+                                                        TextAlignment="Center" Text="{Binding Notification}" Foreground="White" Background="Transparent"/>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
 
                                     <!-- Buttons -->

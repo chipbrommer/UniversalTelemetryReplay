@@ -52,9 +52,9 @@
 
                 <!-- Row 2 - Controls -->
                 <Border Grid.Row="2" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
-                    <Grid x:Name="ControlsGrid" Visibility="Hidden">
+                    <Grid x:Name="ControlsGrid" Visibility="Visible">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto" MinHeight="80"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         
@@ -64,18 +64,20 @@
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
+                            
                             <TextBlock x:Name="ReplayStartTime"  Grid.Column="0" Text="0.0" VerticalAlignment="Center" HorizontalAlignment="Left" 
                                 TextAlignment="Center" Margin="5,0,5,0" Width="70" Foreground="{DynamicResource TextSecondaryColor}"/>
                             <Grid Grid.Column="1">
-                                <Grid.RowDefinitions>
+                                <!--<Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
                                     <RowDefinition Height="*"/>
-                                    <RowDefinition Height="*"/>
-                                </Grid.RowDefinitions>
+                                </Grid.RowDefinitions>-->
 
-                                <Canvas x:Name="LogLinesCanvas" Grid.Row="0" Margin="5,2,5,2" Height="30"/>
-                                <Slider x:Name="ReplaySlider" Grid.Row="1"
-                                    Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"
-                                    IsSnapToTickEnabled="True" TickPlacement="BottomRight" Margin="5,0,5,0"/>
+                                    <Canvas x:Name="LogLinesCanvas" Grid.Row="0" Margin="5,5,5,2" MinHeight="60" VerticalAlignment="Top"/>
+                                    <Slider x:Name="ReplaySlider" Grid.Row="1"
+                                        Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"
+                                        IsSnapToTickEnabled="True" TickPlacement="BottomRight" Margin="5,0,5,0"/>
+
                             </Grid>
                             <TextBlock x:Name="ReplayEndTime" Grid.Column="2" Text="0.0" VerticalAlignment="Center" HorizontalAlignment="Right" 
                                 TextAlignment="Center" Margin="5,0,5,0" Width="70" Foreground="{DynamicResource TextSecondaryColor}"/>

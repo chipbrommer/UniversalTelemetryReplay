@@ -126,8 +126,8 @@ namespace UniversalTelemetryReplay
             Brushes.Cyan,
             Brushes.Magenta,
             Brushes.Brown,
-            Brushes.DarkGray,
-            Brushes.SeaGreen,
+            Brushes.Goldenrod,
+            Brushes.Black,
             Brushes.DarkOrange,
             Brushes.Coral,
             Brushes.DarkOrchid,
@@ -257,8 +257,6 @@ namespace UniversalTelemetryReplay
             {
                 if (clickedButton == LoadButton)
                 {
-                    replayView.UpdateAddButton(true);
-
                     Task.Run(() =>
                     {
                         if (ParseSelectedLogs())
@@ -268,7 +266,9 @@ namespace UniversalTelemetryReplay
                                 UpdatePlaybackControls(PlayBackStatus.Loaded);
                                 UpdateReplayContent();
 
-                                foreach(LogItem log in replayView.logItems)
+                                replayView.UpdateAddButton(true);
+
+                                foreach (LogItem log in replayView.logItems)
                                 {
                                     log.Locked = true;
                                 }
@@ -339,6 +339,8 @@ namespace UniversalTelemetryReplay
                     foreach (LogItem log in replayView.logItems)
                     {
                         log.Locked = false;
+                        log.Notify = false;
+                        log.Notification = "";
                     }
 
                     // Unlock the add button
@@ -489,6 +491,7 @@ namespace UniversalTelemetryReplay
                 // If no path was selected, skip this log. 
                 if (log.PathSelected == false)
                 {
+                    SetLogNotification(log, true, "No specified filepath");
                     UpdateLogStatus(LogStatus.Skipped, log);
                     continue;
                 }
@@ -497,6 +500,7 @@ namespace UniversalTelemetryReplay
                 if (!ParseConfigurations(log))
                 {
                     // If here, no matching config was found for this log
+                    SetLogNotification(log, true, "No matching configuration within limit");
                     UpdateLogStatus(LogStatus.NotFound, log);
                 }
                 else success++;
@@ -794,7 +798,6 @@ namespace UniversalTelemetryReplay
                 ReplayEndTime.Text = "100 %";
                 ReplaySlider.Minimum = 0;
                 ReplaySlider.Maximum = 100;
-                ReplaySlider.Value = 0;
 
                 // Update the start and end time with the longest file's start and end times
                 if (longestLog != null)
@@ -823,6 +826,10 @@ namespace UniversalTelemetryReplay
                 ReplaySlider.Minimum = startTime;
                 ReplaySlider.Maximum = endTime;
             }
+
+            // Update the tick frequency to every 1% and set value to 0
+            ReplaySlider.TickFrequency = (ReplaySlider.Maximum - ReplaySlider.Minimum) / 100;
+            ReplaySlider.Value = 0;
 
             // Update the accents for the slider
             UpdateSliderLogAccents();
@@ -881,11 +888,20 @@ namespace UniversalTelemetryReplay
                     };
 
                     // Increment the vertical position for the next line
-                    currentY += 5;
+                    currentY += 3;
 
                     // Add the line to the Canvas
                     LogLinesCanvas.Children.Add(line);
                 }
+            }
+        }
+
+        private void SetLogNotification(LogItem log, bool enabled = false, string message = "")
+        {
+            if (log != null)
+            {
+                log.Notify = enabled;
+                log.Notification = message;
             }
         }
     }

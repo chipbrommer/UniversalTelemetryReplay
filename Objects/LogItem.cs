@@ -26,6 +26,8 @@ namespace UniversalTelemetryReplay.Objects
         private bool _readyForReplay = false;
         private int _totalPackets = 0;
         private bool _locked;
+        private bool _notify;
+        private string _notification;
 
         public int Id
         {
@@ -138,6 +140,18 @@ namespace UniversalTelemetryReplay.Objects
         {
             get { return _locked; }
             set { _locked = value; OnPropertyChanged(nameof(Locked)); }
+        }
+
+        public bool Notify
+        {
+            get { return _notify; }
+            set { _notify = value; OnPropertyChanged(nameof(Notify)); }
+        }
+
+        public string Notification
+        {
+            get { return _notification; }
+            set { _notification = value; OnPropertyChanged(nameof(Notification)); }
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
