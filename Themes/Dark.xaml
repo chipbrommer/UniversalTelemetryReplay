@@ -7,7 +7,7 @@
     
     <!-- Primary Colors -->
     <SolidColorBrush x:Key="PrimaryBlueColor" Color="#3772FF"/>
-    <SolidColorBrush x:Key="PrimaryRedColor" Color="#E63535"/>
+    <SolidColorBrush x:Key="PrimaryRedColor" Color="#992620"/>
     <SolidColorBrush x:Key="PrimaryGreenColor" Color="#05A660"/>
     <SolidColorBrush x:Key="PrimaryOrangeColor" Color="#E67A00"/>
     <SolidColorBrush x:Key="PrimaryYellowColor" Color="#E6B800"/>

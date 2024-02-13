@@ -46,7 +46,8 @@ namespace UniversalTelemetryReplay.Pages
                 StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"],
                 IpAddress = "127.0.0.1",
                 Port = 5700,
-                LogColor = MainWindow.ItemMappingBrushColors[LogItem.NEXT_ID],
+                // Make sure we never exceed the color list bounds.
+                LogColor = ItemMappingBrushColors[LogItem.NEXT_ID % ItemMappingBrushColors.Count],
             });
 
             LogItem.NEXT_ID++;
@@ -150,6 +151,14 @@ namespace UniversalTelemetryReplay.Pages
 
         private void LogBrowse_Click(object sender, RoutedEventArgs e)
         {
+            // If the logs are already loaded. prevent browse button from opening.
+            if (mw.currentStatus != PlayBackStatus.Unloaded &&
+                mw.currentStatus != PlayBackStatus.Stopped)
+            {
+                MessageBox.Show("Cannot edit log while it is loaded or playing.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             // Get the button that was clicked
             if (sender is not Button browseButton) return;
 

@@ -11,7 +11,8 @@
         Width="850"
         MinWidth="820"
         Background="{DynamicResource PrimaryBackgroundColor}" 
-        WindowStartupLocation="CenterScreen">
+        WindowStartupLocation="CenterScreen"
+        SizeChanged="Window_SizeChanged">
     <Window.Icon>
         <BitmapImage UriSource="pack://application:,,,/UniversalTelemetryReplay;component/Resources/utr_rd_logo.ico"/>
     </Window.Icon>

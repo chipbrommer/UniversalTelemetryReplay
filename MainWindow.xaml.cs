@@ -25,6 +25,7 @@ namespace UniversalTelemetryReplay
         private double playbackSpeed = 0;
         private double startTime = 0;
         private double endTime = 0;
+        public PlayBackStatus currentStatus = PlayBackStatus.Unloaded;
         private List<List<TelemetryMessage>> tmMessages;
 
         /// Views
@@ -116,19 +117,29 @@ namespace UniversalTelemetryReplay
             "5x"
         ];
 
-        public static List<Brush> ItemMappingBrushColors = new List<Brush>
-        {
+        public static List<Brush> ItemMappingBrushColors =
+        [
             Brushes.Red,
             Brushes.Blue,
             Brushes.Green,
-            Brushes.Yellow,
-            Brushes.Orange,
             Brushes.Purple,
             Brushes.Cyan,
             Brushes.Magenta,
             Brushes.Brown,
-            Brushes.Gray
-        };
+            Brushes.DarkGray,
+            Brushes.SeaGreen,
+            Brushes.DarkOrange,
+            Brushes.Coral,
+            Brushes.DarkOrchid,
+            Brushes.DarkBlue, 
+            Brushes.DarkKhaki,
+            Brushes.DarkOliveGreen,
+            Brushes.Maroon,
+            Brushes.LightGreen,
+            Brushes.LightBlue,
+            Brushes.Yellow,
+            Brushes.Teal,
+        ];
 
         public MainWindow()
         {
@@ -185,6 +196,11 @@ namespace UniversalTelemetryReplay
 
             // Set default view
             ChangeView(View.Replay);
+        }
+
+        private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            UpdateSliderLogAccents();
         }
 
         /// <summary>Changes the view content</summary>
@@ -328,13 +344,17 @@ namespace UniversalTelemetryReplay
                 {
                     settingsFile.data.ConcurrentPlaybackEnabled = toggleButton.IsChecked ?? false;
                     settingsFile.Save();
-                    UpdateSliderLogAccents();
+                    UpdateReplayContent();
                 }
             }
         }
 
         private void UpdatePlaybackControls(PlayBackStatus status)
         {
+            // Capture the status update
+            currentStatus = status;
+
+            // Perform work. 
             switch(status) 
             {
                 case PlayBackStatus.Unloaded: 
@@ -435,6 +455,9 @@ namespace UniversalTelemetryReplay
             // Attempt the parse the logs
             foreach(LogItem log in replayView.logItems) 
             {
+                // If the log is already parsed, no need to re-parse. 
+                if (log.ReadyForReplay) { success++; continue; }
+
                 // Initialize the inner list if it hasn't been initialized yet
                 int logIndex = replayView.logItems.IndexOf(log);
 
@@ -443,6 +466,7 @@ namespace UniversalTelemetryReplay
                 {
                     tmMessages.Add([]);
                 }
+                
                 // preventive check against null
                 if (tmMessages[logIndex] == null)
                 {
@@ -755,21 +779,21 @@ namespace UniversalTelemetryReplay
                     }
                 }
 
-                //// Update start and end to be a percentage
-                //ReplayStartTime.Text = "0 %";
-                //ReplayEndTime.Text = "100 %";
-                //ReplaySlider.Minimum = 0;
-                //ReplaySlider.Maximum = 100;
-                //ReplaySlider.Value = 0;
+                // Update start and end to be a percentage
+                ReplayStartTime.Text = "0 %";
+                ReplayEndTime.Text = "100 %";
+                ReplaySlider.Minimum = 0;
+                ReplaySlider.Maximum = 100;
+                ReplaySlider.Value = 0;
 
-                //// Update the start and end time with the longest file's start and end times
-                //if (longestLog != null)
-                //{
-                //    startTime = longestLog.StartTime;
-                //    endTime = longestLog.EndTime;
-                //    ReplaySlider.Minimum = startTime;
-                //    ReplaySlider.Maximum = endTime;
-                //}
+                // Update the start and end time with the longest file's start and end times
+                if (longestLog != null)
+                {
+                    startTime = longestLog.StartTime;
+                    endTime = longestLog.EndTime;
+                    ReplaySlider.Minimum = 0;
+                    ReplaySlider.Maximum = endTime - startTime;
+                }
             }
             else
             {
@@ -796,6 +820,9 @@ namespace UniversalTelemetryReplay
 
         private void UpdateSliderLogAccents()
         {
+            // if we arent loaded or if the count is 0, return
+            if(currentStatus != PlayBackStatus.Loaded || tmMessages.Count == 0) { return; }
+
             // Clear any existing lines from the canvas
             LogLinesCanvas.Children.Clear();
 
@@ -821,7 +848,15 @@ namespace UniversalTelemetryReplay
                     // If its a concurrent style replay, show all lines on the far left. 
                     if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
                     {
+                        double logLength = logEndTime - logStartTime;
+                        double totalDuration = endTime - startTime;
+
+                        // Calculate the scaling factor
+                        double scaleFactor = canvasWidth / totalDuration;
+
+                        // Adjust startX and endX based on the scaling factor
                         startX = 0;
+                        endX = logLength * scaleFactor;
                     }
 
                     // Create and configure a Line shape
