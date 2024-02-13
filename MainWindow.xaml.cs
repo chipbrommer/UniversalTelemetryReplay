@@ -784,7 +784,11 @@ namespace UniversalTelemetryReplay
                 while (!replayComplete)
                 {
                     // Check if we are paused
-                    pauseSignal.WaitOne(0);
+                    if (pauseSignal.WaitOne(0))
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
 
                     // Check if the signal is set - Indicating a stop
                     if (stopSignal.WaitOne(0))
@@ -846,7 +850,7 @@ namespace UniversalTelemetryReplay
 
                             // Check if the file is complete
                             if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
-    
+
                         }
                     }
 
@@ -871,12 +875,6 @@ namespace UniversalTelemetryReplay
                 foreach (var fileStream in logFileStreams)
                 {
                     fileStream.Close();
-                }
-
-                // Incidate stopped / finished
-                if (currentStatus != PlayBackStatus.Stopped)
-                {
-                    Dispatcher.Invoke(() => UpdatePlaybackControls(PlayBackStatus.Stopped));
                 }
             }
         }
