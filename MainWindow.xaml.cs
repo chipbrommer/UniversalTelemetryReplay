@@ -743,30 +743,44 @@ namespace UniversalTelemetryReplay
             List<double> logLastSentTimestamp = [];
             List<FileStream> logFileStreams = [];
 
-            // Create the needed items for each log
-            foreach (LogItem log in replayView.logItems)
+            try
             {
-                logEndpoints.Add(new IPEndPoint(IPAddress.Parse(log.IpAddress), log.Port));
-                logLastSentTimestamp.Add(0.0);
-                logFileStreams.Add(File.Open(log.FilePath, FileMode.Open));
-            }
-
-            while (true)
-            {
-                // Check if we are paused
-                pauseSignal.WaitOne(0);
-
-                // Check if the signal is set - Indicating a stop
-                if (stopSignal.WaitOne(0))
+                // Create the needed items for each log
+                foreach (LogItem log in replayView.logItems)
                 {
-                    Console.WriteLine("Replay stopped.");
-                    break;
+                    logEndpoints.Add(new IPEndPoint(IPAddress.Parse(log.IpAddress), log.Port));
+                    logLastSentTimestamp.Add(0.0);
+                    logFileStreams.Add(File.Open(log.FilePath, FileMode.Open));
                 }
 
-                
+                while (true)
+                {
+                    // Check if we are paused
+                    pauseSignal.WaitOne(0);
 
-                // Take a breather.
-                Thread.Sleep(1);
+                    // Check if the signal is set - Indicating a stop
+                    if (stopSignal.WaitOne(0))
+                    {
+                        Console.WriteLine("Replay stopped.");
+                        break;
+                    }
+
+
+
+                    // Take a breather.
+                    Thread.Sleep(1);
+                }
+            }
+            finally
+            {
+                // Close UDP client
+                udp.Close();
+
+                // Close file streams
+                foreach (var fileStream in logFileStreams)
+                {
+                    fileStream.Close();
+                }
             }
         }
 
