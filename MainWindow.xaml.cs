@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel;
 using System.IO;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
@@ -736,6 +738,19 @@ namespace UniversalTelemetryReplay
 
         private void StartReplayWorker()
         {
+            UdpClient udp = new() { EnableBroadcast = true };
+            List<IPEndPoint> logEndpoints = [];
+            List<double> logLastSentTimestamp = [];
+            List<FileStream> logFileStreams = [];
+
+            // Create the needed items for each log
+            foreach (LogItem log in replayView.logItems)
+            {
+                logEndpoints.Add(new IPEndPoint(IPAddress.Parse(log.IpAddress), log.Port));
+                logLastSentTimestamp.Add(0.0);
+                logFileStreams.Add(File.Open(log.FilePath, FileMode.Open));
+            }
+
             while (true)
             {
                 // Check if we are paused
@@ -748,8 +763,10 @@ namespace UniversalTelemetryReplay
                     break;
                 }
 
-                // Do some work 
-                Thread.Sleep(100);
+                
+
+                // Take a breather.
+                Thread.Sleep(1);
             }
         }
 
