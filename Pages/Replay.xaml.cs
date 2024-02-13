@@ -135,7 +135,7 @@ namespace UniversalTelemetryReplay.Pages
             else if(locked)
             {
                 AddLogItemButton.IsEnabled = false;
-                AddLogItemButton.Content = "Current Logs Parsed - Please Reset To Edit Or Add More";
+                AddLogItemButton.Content = "Current Logs Parsed - Please Reset To Edit";
             }
             else
             {
@@ -143,10 +143,6 @@ namespace UniversalTelemetryReplay.Pages
                 AddLogItemButton.Content = "Add Log to Replay";
                 TotalItemsTextBlock.Foreground = (Brush)Application.Current.Resources["TextSecondaryColor"];
             }
-
-            // Show / Hide the play controls based on number of logs
-            if (logItems.Count > 0) mw.UpdateControls(true);
-            else mw.UpdateControls(false);
         }
 
         private void LogBrowse_Click(object sender, RoutedEventArgs e)
@@ -219,6 +215,13 @@ namespace UniversalTelemetryReplay.Pages
 
         private void LogRemove_Click(object sender, RoutedEventArgs e)
         {
+            // If the logs are already loaded. prevent removal of log
+            if (mw.currentStatus != PlayBackStatus.Unloaded &&
+                mw.currentStatus != PlayBackStatus.Stopped)
+            {
+                return;
+            }
+
             // Get the button that was clicked
             if (sender is not Button removeButton) return;
 

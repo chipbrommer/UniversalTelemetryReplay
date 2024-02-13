@@ -27,9 +27,10 @@ namespace UniversalTelemetryReplay
         private double playbackSpeed = 0;
         private double startTime = 0;
         private double endTime = 0;
-        private double replayStartTime = 0;
+        private double replayTime = 0;
         public PlayBackStatus currentStatus = PlayBackStatus.Unloaded;
         private List<List<TelemetryMessage>> tmMessages;
+        private HashSet<string> copiedFiles = [];
 
         /// Views
         private View currentView;
@@ -261,9 +262,16 @@ namespace UniversalTelemetryReplay
 
                                 foreach (LogItem log in replayView.logItems)
                                 {
-                                    log.Locked = true;
+                                    if(log.ReadyForReplay)
+                                    {
+                                        log.Locked = true;
+                                    }
                                 }
                             });
+                        }
+                        else if(replayView.logItems.Count == 0)
+                        {
+                            Dispatcher.Invoke(() => MessageBox.Show("Please add a log before loading.", "Error", MessageBoxButton.OK, MessageBoxImage.Error));
                         }
                         else
                         {
@@ -332,6 +340,14 @@ namespace UniversalTelemetryReplay
                     pauseSignal.Reset();
                     startTime = 0;
                     endTime = 0;
+                    ReplaySlider.Value = 0;
+                    LogLinesCanvas.Children.Clear();
+
+                    if(settingsFile != null && settingsFile.data != null && !settingsFile.data.ConcurrentPlaybackEnabled) 
+                    {
+                        ReplayStartTime.Text = "0.0";
+                        ReplayEndTime.Text = "0.0";
+                    }
 
                     foreach (LogItem log in replayView.logItems)
                     {
@@ -638,7 +654,7 @@ namespace UniversalTelemetryReplay
         {
             if (timestampSize == 4)
             {
-                uint time = BitConverter.ToUInt32(buffer, offset);
+                int time = BitConverter.ToInt32(buffer, offset);
                 return time / timestampScaling;
             }
             else if (timestampSize == 8)
@@ -761,9 +777,7 @@ namespace UniversalTelemetryReplay
             UdpClient udp = new() { EnableBroadcast = true };
             List<IPEndPoint> logEndpoints = [];
             List<FileStream> logFileStreams = [];
-
-            ///<summary> Tuple (tmMessage index, tmMessage timestamp, last send time)</summary>
-            List<Tuple<int,double, MonotonicTimestamp>> logLastSent = [];
+            List<MonotonicTimestamp> logLastSentTime = [];
 
             try
             {
@@ -771,98 +785,98 @@ namespace UniversalTelemetryReplay
                 foreach (LogItem log in replayView.logItems)
                 {
                     logEndpoints.Add(new IPEndPoint(IPAddress.Parse(log.IpAddress), log.Port));
-                    logLastSent.Add(new Tuple<int, double, MonotonicTimestamp>(-1, 0.0, MonotonicTimestamp.Now()));
-                    logFileStreams.Add(File.Open(log.FilePath, FileMode.Open));
+
+                    // Create a temp copy of the file at the filepath so we dont block the file usage
+                    string tempPath = System.IO.Path.Combine(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), companyFolder, applicationFolder), System.IO.Path.GetFileName(log.FilePath));
+
+                    // Check if the file has already been copied, if so, give it a copy number
+                    if (copiedFiles.Contains(tempPath))
+                    {
+                        tempPath = AppendCountToTempPath(tempPath, copiedFiles.Count);
+                    }
+
+                    // Add the file to the set of copied files
+                    copiedFiles.Add(tempPath);
+
+                    // Copy the content of the original log file to the temporary file
+                    File.Copy(log.FilePath, tempPath, true);
+
+                    logFileStreams.Add(File.Open(tempPath, FileMode.Open));
+                    logLastSentTime.Add(MonotonicTimestamp.Now());
                 }
 
                 // Log the start time
-                replayStartTime = startTime;
+                replayTime = startTime;
 
+                // Do some real good work
                 bool replayComplete = false;
-                MonotonicTimestamp lastSentTime = MonotonicTimestamp.Now();
-
                 while (!replayComplete)
                 {
-                    // Check if we are paused
-                    if (pauseSignal.WaitOne(0))
-                    {
-                        Thread.Sleep(1);
-                        continue;
-                    }
-
-                    // Check if the signal is set - Indicating a stop
+                    // Check if a signal is set - Indicating stop or pause
                     if (stopSignal.WaitOne(0))
                     {
                         Console.WriteLine("Replay stopped.");
                         break;
                     }
+                    else if(pauseSignal.WaitOne(0))
+                    {
+                        Thread.Sleep(1);
+                        continue;
+                    }
 
                     // For each log in the list, check if time to send
-                    foreach(LogItem log in replayView.logItems)
+                    foreach (LogItem log in replayView.logItems)
                     {
                         if (!log.IsReplayComplete)
                         {
                             // Capture what index this log is. 
                             int logIndex = replayView.logItems.IndexOf(log);
-                            TelemetryMessage msg = tmMessages[logIndex][0];
 
                             // Preventive check
-                            if (configManager == null) return;
+                            if (configManager == null || configManager.GetData() == null) return;
 
-                            // Get the config and make sure its not null
+                            // Calculate adjusted time
+                            MonotonicTimestamp now = MonotonicTimestamp.Now();
+                            replayTime += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
+                            double adjustedTime = replayTime;
+                            logLastSentTime[logIndex] = now;
+
+                            // Get the config and make sure it's not null
                             MessageConfiguration config = configManager.GetData()[replayView.logItems[logIndex].ConfigIndex];
                             if (config == null) return;
 
                             // Create a buffer to hold the message
                             byte[] data = new byte[config.MessageSize];
 
-                            // Get the next item to be sent
-                            if (logLastSent[logIndex].Item1 != -1)
+                            // Check if it's time to send any of the messages for this log
+                            while (log.ReplayedPackets <= log.TotalPackets && tmMessages[logIndex][log.ReplayedPackets].Timestamp <= adjustedTime)
                             {
-                                msg = tmMessages[logIndex][logLastSent[logIndex].Item1 + 1];
+                                // Get the message from the memory location
+                                logFileStreams[logIndex].Seek(tmMessages[logIndex][log.ReplayedPackets].MemoryLocation, SeekOrigin.Begin);
+                                logFileStreams[logIndex].Read(data, 0, data.Length);
+
+                                // Attempt to send the message
+                                if (udp.Send(data, data.Length, logEndpoints[logIndex]) > 0)
+                                {
+                                    // Update the send count
+                                    log.ReplayedPackets++;
+                                    log.PlaybackAmountComplete = log.ReplayedPackets / log.TotalPackets;
+                                }
+
+                                // Check if the file is complete
+                                if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
                             }
-
-                            // Get the message from the memory location
-                            logFileStreams[logIndex].Seek(msg.MemoryLocation, SeekOrigin.Begin);
-                            logFileStreams[logIndex].Read(data, 0, data.Length);
-
-                            double convertedTime = 0;
-                            MonotonicTimestamp now = MonotonicTimestamp.Now();
-
-                            replayStartTime += (now - lastSentTime).TotalSeconds * playbackSpeed;
-                            convertedTime = replayStartTime;
-                            Dispatcher.Invoke(() => ReplaySlider.Value = convertedTime);
-
-                            // Continue to next item if its not time to send 
-                            if (msg.Timestamp > convertedTime) { continue; }
-
-                            // Attempt to send the message
-                            if (udp.Send(data, data.Length, logEndpoints[logIndex]) > 0)
-                            {
-                                // Update the last sent content with latest
-                                lastSentTime = now;
-                                logLastSent[logIndex] = new Tuple<int, double, MonotonicTimestamp>(logLastSent[logIndex].Item1 + 1, msg.Timestamp, lastSentTime);
-
-                                // Update the send count
-                                log.ReplayedPackets++;
-                                log.PlaybackAmountComplete = log.ReplayedPackets / log.TotalPackets;
-                            }
-
-                            // Check if the file is complete
-                            if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
-
                         }
                     }
 
-                    // Check if all logs are complete, if so, break out. 
-                    int completeCount = 0;
-                    foreach (LogItem log in replayView.logItems) 
-                    { 
-                        if(log.IsReplayComplete) completeCount++;
-                        if(completeCount == replayView.logItems.Count) replayComplete = true;
-                    }
+                    // Check if all logs are complete
+                    if (replayView.logItems.All(log => log.IsReplayComplete))
+                        replayComplete = true;
 
-                    // Take a breather.
+                    // Update ReplaySlider - outside loop to prevent overloading UI
+                    Dispatcher.Invoke(() => ReplaySlider.Value = replayTime);
+
+                    // Take a breather
                     Thread.Sleep(1);
                 }
             }
@@ -995,12 +1009,29 @@ namespace UniversalTelemetryReplay
                     };
 
                     // Increment the vertical position for the next line
-                    currentY += 2;
+                    currentY += 3;
 
                     // Add the line to the Canvas
                     LogLinesCanvas.Children.Add(line);
                 }
             }
+        }
+
+        private string AppendCountToTempPath(string tempPath, int count)
+        {
+            // Remove the file extension
+            string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(tempPath);
+
+            // Add the count to the filename
+            string newFileName = $"{fileNameWithoutExtension}_{count}";
+
+            // Re-add the file extension
+            string fileExtension = System.IO.Path.GetExtension(tempPath);
+
+            // Combine the new file name with the file extension
+            string newTempPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(tempPath), newFileName + fileExtension);
+
+            return newTempPath;
         }
     }
 }

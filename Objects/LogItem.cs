@@ -26,10 +26,10 @@ namespace UniversalTelemetryReplay.Objects
         private bool _readyForReplay = false;
         private int _totalPackets = 0;
         private int _replayedPackets = 0;
-        private bool _locked;
-        private bool _notify;
-        private string _notification;
-        private bool _replayComplete;
+        private bool _locked = false;
+        private bool _notify = false;
+        private string _notification = "";
+        private bool _replayComplete = false;
 
         public int Id
         {
