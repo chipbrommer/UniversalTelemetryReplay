@@ -249,6 +249,12 @@ namespace UniversalTelemetryReplay
             {
                 if (clickedButton == LoadButton)
                 {
+                    if(configManager != null && configManager.GetData().Count < 1)
+                    {
+                        MessageBox.Show("Please add a configuration before attempting to load.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
+
                     Task.Run(() =>
                     {
                         if (ParseSelectedLogs())

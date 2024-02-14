@@ -29,7 +29,7 @@ namespace UniversalTelemetryReplay.Pages
             if (string.IsNullOrEmpty(name))
             {
                 MessageBox.Show("Please enter a name for the configuration.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                return; // Stop further execution
+                return;
             }
 
             // Retrieve values from the optional input fields
@@ -118,8 +118,9 @@ namespace UniversalTelemetryReplay.Pages
 
         private void DeleteAllConfiguration_Click(object sender, RoutedEventArgs e)
         {
-            if(MainWindow.configManager == null)
+            if(MainWindow.configManager == null || MainWindow.configManager.GetData().Count < 1)
             {
+                MessageBox.Show("No configurations to delete.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -293,6 +294,12 @@ namespace UniversalTelemetryReplay.Pages
 
         private void ExportConfiguration_Click(object sender, RoutedEventArgs e)
         {
+            if (MainWindow.configManager == null || MainWindow.configManager.GetData().Count < 1)
+            {
+                MessageBox.Show("No configurations to export.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
             SaveFileDialog saveFileDialog = new()
             {
                 Filter = "JSON files (*.json)|*.json|All files (*.*)|*.*",
