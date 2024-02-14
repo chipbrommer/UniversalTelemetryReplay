@@ -624,7 +624,7 @@ namespace UniversalTelemetryReplay
                     {
                         UpdateLogStatus(LogStatus.Found, log);
                         log.ReadyForReplay = true;
-                        log.TotalPackets = tmMessages[logIndex].Count();
+                        log.TotalPackets = tmMessages[logIndex].Count;
                         return true;
                     }
                 }
@@ -778,6 +778,10 @@ namespace UniversalTelemetryReplay
             List<IPEndPoint> logEndpoints = [];
             List<FileStream> logFileStreams = [];
             List<MonotonicTimestamp> logLastSentTime = [];
+            List<double> logReplayTime = [];
+
+            // Keep track of the longest log for concurrent replay type
+            LogItem longestLog = new();
 
             try
             {
@@ -803,6 +807,10 @@ namespace UniversalTelemetryReplay
 
                     logFileStreams.Add(File.Open(tempPath, FileMode.Open));
                     logLastSentTime.Add(MonotonicTimestamp.Now());
+                    logReplayTime.Add(log.StartTime);
+
+                    // Capture the longestLog 
+                    if (log.TotalPackets > longestLog.TotalPackets) longestLog = log;
                 }
 
                 // Log the start time
@@ -815,7 +823,6 @@ namespace UniversalTelemetryReplay
                     // Check if a signal is set - Indicating stop or pause
                     if (stopSignal.WaitOne(0))
                     {
-                        Console.WriteLine("Replay stopped.");
                         break;
                     }
                     else if(pauseSignal.WaitOne(0))
@@ -836,9 +843,20 @@ namespace UniversalTelemetryReplay
                             if (configManager == null || configManager.GetData() == null) return;
 
                             // Calculate adjusted time
+                            double adjustedTime = 0;
                             MonotonicTimestamp now = MonotonicTimestamp.Now();
-                            replayTime += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
-                            double adjustedTime = replayTime;
+
+                            // Based on the replay type, handle the replay time. 
+                            if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
+                            {
+                                logReplayTime[logIndex] += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
+                                adjustedTime = logReplayTime[logIndex];
+                            }
+                            else 
+                            {
+                                replayTime += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
+                                adjustedTime = replayTime;
+                            }
                             logLastSentTime[logIndex] = now;
 
                             // Get the config and make sure it's not null
@@ -849,7 +867,7 @@ namespace UniversalTelemetryReplay
                             byte[] data = new byte[config.MessageSize];
 
                             // Check if it's time to send any of the messages for this log
-                            while (log.ReplayedPackets <= log.TotalPackets && tmMessages[logIndex][log.ReplayedPackets].Timestamp <= adjustedTime)
+                            while (log.ReplayedPackets < log.TotalPackets && tmMessages[logIndex][log.ReplayedPackets].Timestamp <= adjustedTime)
                             {
                                 // Get the message from the memory location
                                 logFileStreams[logIndex].Seek(tmMessages[logIndex][log.ReplayedPackets].MemoryLocation, SeekOrigin.Begin);
@@ -866,15 +884,27 @@ namespace UniversalTelemetryReplay
                                 // Check if the file is complete
                                 if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
                             }
+
+                            // Update the longest log
+                            if (longestLog.TotalPackets == log.TotalPackets) longestLog = log;
                         }
                     }
 
                     // Check if all logs are complete
                     if (replayView.logItems.All(log => log.IsReplayComplete))
+                    {
                         replayComplete = true;
+                    }
 
                     // Update ReplaySlider - outside loop to prevent overloading UI
-                    Dispatcher.Invoke(() => ReplaySlider.Value = replayTime);
+                    if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
+                    {
+                        Dispatcher.Invoke(() => ReplaySlider.Value = longestLog.ReplayedPackets);
+                    }
+                    else
+                    {
+                        Dispatcher.Invoke(() => ReplaySlider.Value = replayTime);
+                    }
 
                     // Take a breather
                     Thread.Sleep(1);
@@ -889,6 +919,12 @@ namespace UniversalTelemetryReplay
                 foreach (var fileStream in logFileStreams)
                 {
                     fileStream.Close();
+                }
+
+                // Delete all temporary files permanently
+                foreach (string filePath in copiedFiles)
+                {
+                    if (File.Exists(filePath)) File.Delete(filePath);
                 }
             }
         }
@@ -920,13 +956,13 @@ namespace UniversalTelemetryReplay
                 ReplaySlider.Minimum = 0;
                 ReplaySlider.Maximum = 100;
 
-                // Update the start and end time with the longest file's start and end times
+                // Update the start and end with the longest files total filecount
                 if (longestLog != null)
                 {
                     startTime = longestLog.StartTime;
                     endTime = longestLog.EndTime;
                     ReplaySlider.Minimum = 0;
-                    ReplaySlider.Maximum = endTime - startTime;
+                    ReplaySlider.Maximum = longestLog.TotalPackets;
                 }
             }
             else
@@ -1017,7 +1053,7 @@ namespace UniversalTelemetryReplay
             }
         }
 
-        private string AppendCountToTempPath(string tempPath, int count)
+        private static string AppendCountToTempPath(string tempPath, int count)
         {
             // Remove the file extension
             string fileNameWithoutExtension = System.IO.Path.GetFileNameWithoutExtension(tempPath);

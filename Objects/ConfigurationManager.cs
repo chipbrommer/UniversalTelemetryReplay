@@ -115,5 +115,4 @@ namespace UniversalTelemetryReplay.Objects
             return false; // Configuration with the specified index not found
         }
     }
-
 }

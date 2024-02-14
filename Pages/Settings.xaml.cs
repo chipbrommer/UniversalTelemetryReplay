@@ -1,15 +1,13 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using UniversalTelemetryReplay.Objects;
-using static UniversalTelemetryReplay.MainWindow;
 
 namespace UniversalTelemetryReplay.Pages
 {
-    /// <summary>
-    /// Interaction logic for Settings.xaml
-    /// </summary>
+    /// <summary>Interaction logic for Settings Page</summary>
     public partial class Settings : Page
     {
+        /// <summary> Constructor </summary>
         public Settings()
         {
             InitializeComponent();
@@ -17,6 +15,8 @@ namespace UniversalTelemetryReplay.Pages
             PopulateParseLimitComboBox();
         }
 
+        /// <summary> Set the Theme selection for the UI</summary>
+        /// <param name="value">Theme to be selected</param>
         public void SetThemeSelection(ThemeController.ThemeTypes value)
         {
             switch (value)
@@ -30,6 +30,9 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        /// <summary>Change event for the radio buttons</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Theme_Changed(object sender, RoutedEventArgs e)
         {
             if (sender is RadioButton radioButton && radioButton.IsChecked == true && radioButton.Tag != null)
@@ -48,6 +51,7 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        /// <summary>Populate the ReplayLimit Combo box </summary>
         private void PopulateReplayLimitComboBox()
         {
             // Get all enum values from the ParseLimit enum
@@ -57,11 +61,16 @@ namespace UniversalTelemetryReplay.Pages
             ReplayComboBox.ItemsSource = replayLimit;
         }
 
+        /// <summary>Set the ReplayLimit selection</summary>
+        /// <param name="replayLimit">selected limit</param>
         public void SetReplayLimitSelection(MainWindow.ReplayLimit replayLimit)
         {
             ReplayComboBox.SelectedItem = replayLimit;
         }
 
+        /// <summary>Change tvent for the ReplayLimit combo box</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ReplayComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ReplayComboBox.SelectedItem != null)
@@ -81,6 +90,7 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        /// <summary>Populate the ParseLimit combo box</summary>
         private void PopulateParseLimitComboBox()
         {
             // Get all enum values from the ParseLimit enum
@@ -90,11 +100,16 @@ namespace UniversalTelemetryReplay.Pages
             ParseComboBox.ItemsSource = parseLimitValues;
         }
 
+        /// <summary> Set the ParseLimit selection</summary>
+        /// <param name="parseLimit">selected limit</param>
         public void SetParseLimitSelection(MainWindow.ParseLimit parseLimit)
         {
             ParseComboBox.SelectedItem = parseLimit;
         }
 
+        /// <summary>Change event for the Parse limit combo box</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ParseComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (ParseComboBox.SelectedItem != null)
