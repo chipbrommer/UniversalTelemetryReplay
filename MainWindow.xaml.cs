@@ -96,8 +96,6 @@ namespace UniversalTelemetryReplay
             Five = 5,
             [Description("10")]
             Ten = 10,
-            [Description("20")]
-            Twenty = 20,
         }
 
         readonly List<string> SpeedOptions =
