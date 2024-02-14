@@ -5,6 +5,7 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using UniversalTelemetryReplay.Controls;
@@ -31,6 +32,7 @@ namespace UniversalTelemetryReplay
         public PlayBackStatus currentStatus = PlayBackStatus.Unloaded;
         private List<List<TelemetryMessage>> tmMessages;
         private HashSet<string> copiedFiles = [];
+        private bool sliderMoved = false;
 
         /// Views
         private View currentView;
@@ -688,6 +690,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                         log.Notify = false;
                         log.Notification = "";
+                        log.IsReplayComplete = false;
                     }
                     break;
                 case LogStatus.Parsing:
@@ -698,6 +701,7 @@ namespace UniversalTelemetryReplay
                         log.ConfigBG = (Brush)Application.Current.Resources["PrimaryYellowColor"];
                         log.Notify = false;
                         log.Notification = "";
+                        log.IsReplayComplete = false;
                     }
                     break;
                 case LogStatus.Found:
@@ -715,6 +719,8 @@ namespace UniversalTelemetryReplay
                             log.Notification = error;
                             log.Notify = true;
                         }
+
+                        log.IsReplayComplete = false;
                     }
                     break;
                 case LogStatus.NotFound:
@@ -751,6 +757,7 @@ namespace UniversalTelemetryReplay
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
                         log.Notify = false;
                         log.Notification = "";
+                        log.IsReplayComplete = false;
                     }
                     break;
                 case LogStatus.Finished:
@@ -811,6 +818,9 @@ namespace UniversalTelemetryReplay
 
                     // Capture the longestLog 
                     if (log.TotalPackets > longestLog.TotalPackets) longestLog = log;
+
+                    // Update status to playing
+                    UpdateLogStatus(LogStatus.Playing, log);
                 }
 
                 // Log the start time
@@ -829,6 +839,46 @@ namespace UniversalTelemetryReplay
                     {
                         Thread.Sleep(1);
                         continue;
+                    }
+
+                    // if slider was moved, update the items appropriately
+                    if(sliderMoved)
+                    {
+                        MonotonicTimestamp n = MonotonicTimestamp.Now();
+
+                        foreach (LogItem log in replayView.logItems)
+                        {
+                            int logIndex = replayView.logItems.IndexOf(log);
+
+                            Dispatcher.Invoke(() =>
+                            {
+                                // Based on the replay type, update the data
+                                if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
+                                {
+                                    if (log.ReplayedPackets >= ReplaySlider.Value) log.ReplayedPackets = (int)ReplaySlider.Value;
+                                    else if (log.TotalPackets < ReplaySlider.Value) log.ReplayedPackets = log.TotalPackets;
+                                    else log.ReplayedPackets = (int)ReplaySlider.Value;
+                                    
+                                    logReplayTime[logIndex] = tmMessages[logIndex][log.ReplayedPackets-1].Timestamp;
+                                }
+                                else
+                                {
+                                    replayTime = ReplaySlider.Value;
+                                    log.ReplayedPackets = 0;
+                                    foreach(TelemetryMessage msg in tmMessages[logIndex])
+                                    {
+                                        if(msg.Timestamp < replayTime) log.ReplayedPackets++;
+                                    }
+                                }
+
+                                if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
+                                else UpdateLogStatus(LogStatus.Playing, log);
+                            });
+
+                            logLastSentTime[logIndex] = n;
+                        }
+
+                        sliderMoved = false;
                     }
 
                     // For each log in the list, check if time to send
@@ -1068,6 +1118,22 @@ namespace UniversalTelemetryReplay
             string newTempPath = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(tempPath), newFileName + fileExtension);
 
             return newTempPath;
+        }
+
+        private void ReplaySlider_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e)
+        {
+            // Signal pause when mouse is clicked
+            pauseSignal.Set();
+        }
+
+        private void ReplaySlider_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+        {
+            // Update replayTime when mouse is released
+            replayTime = ReplaySlider.Value;
+            sliderMoved = true;
+
+            // Reset pause signal to resume replay
+            pauseSignal.Reset();
         }
     }
 }
