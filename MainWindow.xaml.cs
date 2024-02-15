@@ -5,7 +5,6 @@ using System.Net.Sockets;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using UniversalTelemetryReplay.Controls;
@@ -23,7 +22,9 @@ namespace UniversalTelemetryReplay
         private readonly string applicationFolder = "UniversalTelemetryReplay";
         private readonly string settingsFileName = @"\settings.json";
         private readonly string configurationsFileName = @"\configurations.json";
-        internal static SettingsFile<Settings>? settingsFile;
+        private readonly string windowFileName = @"\window.json";
+        internal static SettingsFile<WindowInformation>? windowSettings;
+        internal static SettingsFile<Objects.Settings>? settingsFile;
         internal static ConfigurationManager<MessageConfiguration>? configManager;
         private double playbackSpeed = 0;
         private double startTime = 0;
@@ -160,12 +161,26 @@ namespace UniversalTelemetryReplay
 
             // Handle settings file
             string settingsFilePath = programDataPath + settingsFileName;
-            settingsFile = new SettingsFile<Settings>(settingsFilePath);
+            settingsFile = new SettingsFile<Objects.Settings>(settingsFilePath);
 
             // Attempt to load settings
             if (!settingsFile.Load() || settingsFile.data == null)
             {
                 settingsFile.data = new();
+            }
+
+            // Handle window file
+            string windowFilePath = programDataPath + windowFileName;
+            windowSettings = new SettingsFile<WindowInformation>(windowFilePath);
+            windowSettings?.Load();
+
+            if(windowSettings?.data != null) 
+            {
+                Height = windowSettings.data.Height;
+                Width = windowSettings.data.Width;
+                Top = windowSettings.data.Top;
+                Left = windowSettings.data.Left;
+                WindowState = windowSettings.data.IsFullscreen ? WindowState.Maximized : WindowState.Normal;
             }
 
             // Update things based on settings.
@@ -193,6 +208,21 @@ namespace UniversalTelemetryReplay
         private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
         {
             UpdateSliderLogAccents();
+        }
+
+        private void Window_Closing(object sender, CancelEventArgs e)
+        {
+            // Save window settings before closing
+            if (windowSettings != null && windowSettings.data != null)
+            {
+                windowSettings.data.Width = Application.Current.MainWindow.Width;
+                windowSettings.data.Height = Application.Current.MainWindow.Height;
+                windowSettings.data.Top = Application.Current.MainWindow.Top;
+                windowSettings.data.Left = Application.Current.MainWindow.Left;
+                windowSettings.data.IsFullscreen = Application.Current.MainWindow.WindowState == WindowState.Maximized;
+
+                windowSettings.Save();
+            }
         }
 
         /// <summary>Changes the view content</summary>
@@ -399,6 +429,7 @@ namespace UniversalTelemetryReplay
                     StopButton.Visibility = Visibility.Collapsed;
                     ResetButton.Visibility = Visibility.Collapsed;
                     PlaybackStyleButton.IsEnabled = true;
+                    ReplaySlider.Value = 0;
 
                     break;
                 case PlayBackStatus.Loaded:
@@ -490,7 +521,12 @@ namespace UniversalTelemetryReplay
             foreach(LogItem log in replayView.logItems) 
             {
                 // If the log is already parsed, no need to re-parse. 
-                if (log.ReadyForReplay) { success++; continue; }
+                if (log.ReadyForReplay) 
+                { 
+                    success++;
+                    UpdateLogStatus(LogStatus.Found, log);
+                    continue; 
+                }
 
                 // Initialize the inner list if it hasn't been initialized yet
                 int logIndex = replayView.logItems.IndexOf(log);

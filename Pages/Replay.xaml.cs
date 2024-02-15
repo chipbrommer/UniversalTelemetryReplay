@@ -183,6 +183,8 @@ namespace UniversalTelemetryReplay.Pages
                     logItems[index].EndTime = 0;
                     logItems[index].TotalPackets = 0;
                     logItems[index].ReadyForReplay = false;
+                    logItems[index].Notification = "";
+                    logItems[index].Notify = false;
 
                     // Set status to parsing
                     UpdateLogStatus(LogStatus.Unparsed, logItems[index]);

@@ -11,8 +11,8 @@
         Width="900"
         MinWidth="880"
         Background="{DynamicResource PrimaryBackgroundColor}" 
-        WindowStartupLocation="CenterScreen"
-        SizeChanged="Window_SizeChanged">
+        SizeChanged="Window_SizeChanged"
+        Closing="Window_Closing">
     <Window.Icon>
         <BitmapImage UriSource="pack://application:,,,/UniversalTelemetryReplay;component/Resources/utr_rd_logo.ico"/>
     </Window.Icon>
@@ -73,6 +73,7 @@
                                     Minimum="0" Maximum="100" Value="0" VerticalAlignment="Center"
                                     IsSnapToTickEnabled="True" TickPlacement="BottomRight" Margin="5,0,5,0"
                                         Thumb.DragStarted="ReplaySlider_DragStarted" Thumb.DragCompleted="ReplaySlider_DragCompleted"/>
+
                             </Grid>
                             <TextBlock x:Name="ReplayEndTime" Grid.Column="2" Text="0.0" VerticalAlignment="Center" HorizontalAlignment="Right" 
                                 TextAlignment="Center" Margin="5,0,5,0" Width="70" Foreground="{DynamicResource TextSecondaryColor}"/>
@@ -139,6 +140,7 @@
                         </Grid>
                     </Grid>
                 </Border>
+            
             </Grid>
         </Border>
     </Grid>
