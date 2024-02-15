@@ -223,6 +223,12 @@ namespace UniversalTelemetryReplay
 
                 windowSettings.Save();
             }
+
+            // Make sure any temporary files are deleted
+            foreach (string filePath in copiedFiles)
+            {
+                if (File.Exists(filePath)) File.Delete(filePath);
+            }
         }
 
         /// <summary>Changes the view content</summary>
