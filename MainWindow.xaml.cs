@@ -1091,7 +1091,7 @@ namespace UniversalTelemetryReplay
         private void UpdateSliderLogAccents()
         {
             // if we arent loaded or if the count is 0, return
-            if(currentStatus != PlayBackStatus.Loaded || tmMessages.Count == 0) { return; }
+            if(currentStatus == PlayBackStatus.Unloaded || tmMessages.Count == 0) { return; }
 
             // Clear any existing lines from the canvas
             LogLinesCanvas.Children.Clear();
