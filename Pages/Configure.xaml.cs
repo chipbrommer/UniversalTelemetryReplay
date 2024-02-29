@@ -45,6 +45,27 @@ namespace UniversalTelemetryReplay.Pages
             byte end2 = ParseByte(EndByte2TextBox.Text);
             int index = ParseInt(IndexTextBox.Text);
 
+            // Check if the Name field is empty
+            if (sync1 == 0 || sync2 == 0)
+            {
+                MessageBox.Show("Please Enter valid sync bytes for Sync Byte 1 and Sync Byte 2.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Check if the Name field is empty
+            if (messageSize <= 4)
+            {
+                MessageBox.Show("Please enter valid message size.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
+            // Check if the Name field is empty
+            if (end1 == 0)
+            {
+                MessageBox.Show("Please Enter valid end bytes for End Byte 1.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             // Create a new MessageConfiguration object
             MessageConfiguration newConfiguration = new()
             {
@@ -200,6 +221,12 @@ namespace UniversalTelemetryReplay.Pages
 
         private static double EvaluateExpression(string expression)
         {
+            // Check if the text is empty or null - return 0
+            if (string.IsNullOrEmpty(expression))
+            {
+                return 0;
+            }
+
             if (expression.Contains('^'))
             {
                 // If the expression contains '^', use Math.Pow
