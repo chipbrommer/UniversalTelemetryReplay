@@ -767,6 +767,7 @@ namespace UniversalTelemetryReplay
                         log.Locked = false;
                         log.ReplayedPackets = 0;
                         log.PlaybackAmountComplete = 0;
+                        log.TotalPackets = 0;
                         log.Status = "Not Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                         log.Configuration = "Unknown";
