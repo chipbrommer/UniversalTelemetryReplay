@@ -293,7 +293,7 @@ namespace UniversalTelemetryReplay
 
                     Task.Run(() =>
                     {
-                        if (ParseSelectedLogs())
+                        if (ParseLogs())
                         {
                             Dispatcher.Invoke(() =>
                             {
@@ -370,7 +370,7 @@ namespace UniversalTelemetryReplay
                     stopSignal.Set();
 
                     // Wait for threads to finish
-                    replayThread?.Join();
+                    // replayThread?.Join();
 
                     // Update the UI
                     UpdatePlaybackControls(PlayBackStatus.Stopped);
@@ -515,7 +515,7 @@ namespace UniversalTelemetryReplay
             }
         }
 
-        private bool ParseSelectedLogs()
+        private bool ParseLogs()
         {
             // Preventive check
             if (configManager == null || configManager.GetData() == null) return false;
@@ -547,6 +547,10 @@ namespace UniversalTelemetryReplay
                 if (tmMessages[logIndex] == null)
                 {
                     tmMessages.Add([]);
+                }
+                else // Make sure the list is cleared
+                {
+                    tmMessages[logIndex].Clear();
                 }
 
                 // Set status to parsing

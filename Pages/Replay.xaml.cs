@@ -148,10 +148,9 @@ namespace UniversalTelemetryReplay.Pages
         private void LogBrowse_Click(object sender, RoutedEventArgs e)
         {
             // If the logs are already loaded. prevent browse button from opening.
-            if (mw.currentStatus != PlayBackStatus.Unloaded &&
-                mw.currentStatus != PlayBackStatus.Stopped)
+            if (mw.currentStatus != PlayBackStatus.Unloaded)
             {
-                MessageBox.Show("Cannot edit log while it is loaded or playing.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please reset to change the file.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
@@ -218,9 +217,9 @@ namespace UniversalTelemetryReplay.Pages
         private void LogRemove_Click(object sender, RoutedEventArgs e)
         {
             // If the logs are already loaded. prevent removal of log
-            if (mw.currentStatus != PlayBackStatus.Unloaded &&
-                mw.currentStatus != PlayBackStatus.Stopped)
+            if (mw.currentStatus != PlayBackStatus.Unloaded)
             {
+                MessageBox.Show("Please reset to remove the file.", "Notice", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
