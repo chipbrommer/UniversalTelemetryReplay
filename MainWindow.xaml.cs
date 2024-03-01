@@ -581,6 +581,9 @@ namespace UniversalTelemetryReplay
             // For each configuration in the data, check if the log matches
             foreach (MessageConfiguration config in configManager.GetData())
             {
+                // Make sure the config has a valid time stamp. 
+                if (config.TimestampByteOffset == 0 || config.TimestampSize == 0) continue;
+
                 // load entries from the telemetry file
                 if (File.Exists(log.FilePath))
                 {

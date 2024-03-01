@@ -59,6 +59,13 @@ namespace UniversalTelemetryReplay.Pages
                 return;
             }
 
+            // Check if the Timetsamp info is empty
+            if (timestampOffset <= 2 || timestampSize <= 1)
+            {
+                MessageBox.Show("Please enter valid timestamp offset and size.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                return;
+            }
+
             // Check if the Name field is empty
             if (end1 == 0)
             {

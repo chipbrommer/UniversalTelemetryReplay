@@ -80,7 +80,9 @@ Enter data into the input fields on the middle/left of the screen.
       - Configuration Name
       - Sync Byte 1
       - Sync Byte 2
-      - Message Size
+      - Message Size - Size in bytes.
+      - Timestamp Offset - This is from byte 0. 
+      - Timestamp Size - Size in bytes. 
       - End Byte 1
 
 ### Timestamp Scaling
