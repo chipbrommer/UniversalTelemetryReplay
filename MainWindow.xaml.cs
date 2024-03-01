@@ -598,6 +598,7 @@ namespace UniversalTelemetryReplay
                     int bytesInBuffer = 0;
                     byte[] buffer = new byte[config.MessageSize];
                     bool foundStart = false;
+                    double lastTimestampFound = 0.0;
 
                     // Capture what index this log is. 
                     int logIndex = replayView.logItems.IndexOf(log);
@@ -628,6 +629,7 @@ namespace UniversalTelemetryReplay
 
                                     // Get the start times
                                     log.StartTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
+                                    lastTimestampFound = log.StartTime;
 
                                     // Capture the start time and memory location to the list
                                     tmMessages[logIndex].Add(new TelemetryMessage
@@ -640,22 +642,39 @@ namespace UniversalTelemetryReplay
                                 }
                                 else
                                 {
-                                    // Get the end times
+                                    // Get the end time
                                     log.EndTime = ParseTimestamp(buffer, i + (int)config.TimestampByteOffset, (int)config.TimestampSize, config.TimestampScaling);
 
                                     // Capture the new log memory location and add to the list
-                                    tmMessages[logIndex].Add(new TelemetryMessage
+                                    TelemetryMessage msg = new()
                                     {
                                         MemoryLocation = totalRead + i,
                                         Timestamp = log.EndTime,
-                                    });
+                                    };
+
+                                    // Check if the delta between timestamps is too large and less than 50% of file read
+                                    if (msg.Timestamp - lastTimestampFound > 600 && totalRead < 0.5 * fileSize)
+                                    {
+                                        // Notify the log
+                                        log.Notify = true;
+                                        log.Notification = $"Large timestamp delta found: Ignored {tmMessages[logIndex].Count} Packets. Times: {log.StartTime:F2} to {tmMessages[logIndex][tmMessages[logIndex].Count - 1].Timestamp:F2}";
+
+                                        // Clear all the data and re-add the log. 
+                                        tmMessages[logIndex].Clear();
+                                        tmMessages[logIndex].Add(msg);
+                                        log.StartTime = msg.Timestamp;
+                                    }
+                                    else if (msg.Timestamp - lastTimestampFound < 600)
+                                    {
+                                        tmMessages[logIndex].Add(msg);
+                                    }
+
+                                    // Update the last timestamp found
+                                    lastTimestampFound = log.EndTime;
                                 }
 
                             }
-                            //else
-                            //{
-                            //    bytesInBuffer--;
-                            //}
+
                         }
 
                         // Update the total bytes Read
@@ -667,12 +686,6 @@ namespace UniversalTelemetryReplay
                         {
                             if (foundStart == false && IsParseLimitReached(settingsFile.data.ParseLimit, config, totalRead, fileSize)) break;
                         }
-
-                        //// If here and bytesInBuffer isnt 0, move the remaining data to the front of the buffer
-                        //if (bytesInBuffer != 0)
-                        //{
-                        //    Array.Copy(buffer, buffer.Length - bytesInBuffer, buffer, 0, bytesInBuffer);
-                        //}
                     }
 
                     if(log.StartTime != 0 && log.EndTime != 0)
@@ -808,8 +821,6 @@ namespace UniversalTelemetryReplay
                     {
                         log.Status = "Playing";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGreenColor"];
-                        log.Notify = false;
-                        log.Notification = "";
                         log.IsReplayComplete = false;
                     }
                     break;
@@ -817,8 +828,6 @@ namespace UniversalTelemetryReplay
                     {
                         log.Status = "Finished";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryBlueColor"];
-                        log.Notify = false;
-                        log.Notification = "";
                         log.IsReplayComplete = true;
                     }
                     break;
