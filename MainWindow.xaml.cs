@@ -1,4 +1,5 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -406,11 +407,7 @@ namespace UniversalTelemetryReplay
 
                     foreach (LogItem log in replayView.logItems)
                     {
-                        log.Locked = false;
-                        log.Notify = false;
-                        log.Notification = "";
-                        log.ReplayedPackets = 0;
-                        log.PlaybackAmountComplete = 0;
+                        UpdateLogStatus(LogStatus.Unparsed, log);
                     }
 
                     // Unlock the add button
@@ -767,6 +764,9 @@ namespace UniversalTelemetryReplay
             {
                 case LogStatus.Unparsed:
                     {
+                        log.Locked = false;
+                        log.ReplayedPackets = 0;
+                        log.PlaybackAmountComplete = 0;
                         log.Status = "Not Parsed";
                         log.StatusBG = (Brush)Application.Current.Resources["PrimaryGrayColor"];
                         log.Configuration = "Unknown";
