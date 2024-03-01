@@ -105,17 +105,20 @@
                             SelectionChanged="ReplayComboBox_SelectionChanged"/>
                     </StackPanel>
                     <StackPanel>
-                        <TextBlock FontSize="14" FontWeight="Medium" Text="Parse Limit" TextDecorations="Underline"
+                    <TextBlock FontSize="14" FontWeight="Medium" Text="Parse Limit" TextDecorations="Underline"
                         HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
                         <ComboBox x:Name="ParseComboBox" Width="100" Height="22" Margin="2"
                             SelectionChanged="ParseComboBox_SelectionChanged"/>
+                    </StackPanel>
+                    <StackPanel>
+                        <TextBlock FontSize="14" FontWeight="Medium" Text="Timestamp Delta Limit" TextDecorations="Underline"
+                        HorizontalAlignment="Center" Foreground="{DynamicResource TextSecondaryColor}"/>
+                        <ComboBox x:Name="TimestampComboBox" Width="100" Height="22" Margin="2"
+                            SelectionChanged="TimestampComboBox_SelectionChanged"/>
                     </StackPanel>
                 </UniformGrid>
             </Grid>
         </Border>
 
-        <Grid Grid.Row="2">
-            <!--Future Expansion-->
-        </Grid>
     </Grid>
 </Page>

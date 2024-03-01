@@ -73,6 +73,18 @@ namespace UniversalTelemetryReplay
             Finished,
         }
 
+        public enum TimestampDeltaLimit
+        {
+            [Description("None")]
+            None = 0,
+            [Description("1 Minutes")]
+            Minutes1 = 60,
+            [Description("5 Minutes")]
+            Minutes5 = 500,
+            [Description("10 Minutes")]
+            Minutes10 = 600,
+        }
+
         public enum ParseLimit
         {
             [Description("None")]
@@ -91,11 +103,11 @@ namespace UniversalTelemetryReplay
 
         public enum ReplayLimit
         {
-            [Description("1")]
+            [Description("1 Log")]
             One = 1,
-            [Description("5")]
+            [Description("5 Logs")]
             Five = 5,
-            [Description("10")]
+            [Description("10 Logs")]
             Ten = 10,
         }
 
@@ -188,6 +200,7 @@ namespace UniversalTelemetryReplay
             settingsView.SetThemeSelection(settingsFile.data.Theme);
             settingsView.SetParseLimitSelection(settingsFile.data.ParseLimit);
             settingsView.SetReplayLimitSelection(settingsFile.data.ReplayLimit);
+            settingsView.SetTimestampDeltaLimitSelection(settingsFile.data.TimestampDeltaLimit);
 
             // Attempt to load configurations
             string configFilePath = programDataPath + configurationsFileName;
@@ -653,7 +666,11 @@ namespace UniversalTelemetryReplay
                                     };
 
                                     // Check if the delta between timestamps is too large and less than 50% of file read
-                                    if (msg.Timestamp - lastTimestampFound > 600 && totalRead < 0.5 * fileSize)
+                                    if (settingsFile != null &&
+                                        settingsFile.data != null &&
+                                        settingsFile.data.TimestampDeltaLimit != TimestampDeltaLimit.None && 
+                                        msg.Timestamp - lastTimestampFound > (int)settingsFile.data.TimestampDeltaLimit && 
+                                        totalRead < 0.5 * fileSize)
                                     {
                                         // Notify the log
                                         log.Notify = true;

@@ -6,6 +6,7 @@
         public ThemeController.ThemeTypes Theme = ThemeController.ThemeTypes.Modern;
         public MainWindow.ParseLimit ParseLimit = MainWindow.ParseLimit.Percent10;
         public MainWindow.ReplayLimit ReplayLimit = MainWindow.ReplayLimit.Five;
+        public MainWindow.TimestampDeltaLimit TimestampDeltaLimit = MainWindow.TimestampDeltaLimit.Minutes5;
         public string PlaybackSpeed = "";
         public bool ConcurrentPlaybackEnabled = false;
         public bool DebugMode = true;

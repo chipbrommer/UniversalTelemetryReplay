@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System.ComponentModel;
+using System.Reflection;
+using System.Windows;
 using System.Windows.Controls;
 using UniversalTelemetryReplay.Objects;
 
@@ -13,6 +15,7 @@ namespace UniversalTelemetryReplay.Pages
             InitializeComponent();
             PopulateReplayLimitComboBox();
             PopulateParseLimitComboBox();
+            PopulateTimestampDeltaLimitComboBox();
         }
 
         /// <summary> Set the Theme selection for the UI</summary>
@@ -54,18 +57,43 @@ namespace UniversalTelemetryReplay.Pages
         /// <summary>Populate the ReplayLimit Combo box </summary>
         private void PopulateReplayLimitComboBox()
         {
-            // Get all enum values from the ParseLimit enum
-            var replayLimit = Enum.GetValues(typeof(MainWindow.ReplayLimit));
+            // Get all enum values from the ReplayLimit enum
+            var replayLimitValues = Enum.GetValues(typeof(MainWindow.ReplayLimit));
 
-            // Set the ItemsSource of the ComboBox to the enum values
-            ReplayComboBox.ItemsSource = replayLimit;
+            // Create a list to hold the descriptions
+            var descriptions = new List<string>();
+
+            // Iterate over each enum value and retrieve its description
+            foreach (var value in replayLimitValues)
+            {
+                FieldInfo fieldInfo = value.GetType().GetField(value.ToString());
+                DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+                // If a description is found, add it to the list
+                if (attributes.Length > 0)
+                {
+                    descriptions.Add(attributes[0].Description);
+                }
+                else
+                {
+                    // If no description is found, use the enum name as the description
+                    descriptions.Add(value.ToString());
+                }
+            }
+
+            // Set the ItemsSource of the ComboBox to the descriptions
+            ReplayComboBox.ItemsSource = descriptions;
         }
 
         /// <summary>Set the ReplayLimit selection</summary>
         /// <param name="replayLimit">selected limit</param>
-        public void SetReplayLimitSelection(MainWindow.ReplayLimit replayLimit)
+        public void SetReplayLimitSelection(MainWindow.ReplayLimit limit)
         {
-            ReplayComboBox.SelectedItem = replayLimit;
+            // Get the description corresponding to the enum value
+            string description = GetEnumDescription(limit);
+
+            // Set the selected item of the combo box to the description
+            ReplayComboBox.SelectedItem = description;
         }
 
         /// <summary>Change tvent for the ReplayLimit combo box</summary>
@@ -75,9 +103,14 @@ namespace UniversalTelemetryReplay.Pages
         {
             if (ReplayComboBox.SelectedItem != null)
             {
-                // Cast the selected item to MainWindow.ParseLimit enum type
-                if (Enum.TryParse(ReplayComboBox.SelectedItem.ToString(), out MainWindow.ReplayLimit selectedLimit))
+                // Get the selected description from the combo box
+                string selectedDescription = ReplayComboBox.SelectedItem.ToString();
+
+                if (selectedDescription != null)
                 {
+                    // Find the corresponding enum value based on the description
+                    MainWindow.ReplayLimit selectedLimit = GetEnumValueFromDescription<MainWindow.ReplayLimit>(selectedDescription);
+
                     if (MainWindow.settingsFile != null &&
                         MainWindow.settingsFile.data != null &&
                         MainWindow.settingsFile.data.ReplayLimit != selectedLimit
@@ -96,15 +129,40 @@ namespace UniversalTelemetryReplay.Pages
             // Get all enum values from the ParseLimit enum
             var parseLimitValues = Enum.GetValues(typeof(MainWindow.ParseLimit));
 
-            // Set the ItemsSource of the ComboBox to the enum values
-            ParseComboBox.ItemsSource = parseLimitValues;
+            // Create a list to hold the descriptions
+            var descriptions = new List<string>();
+
+            // Iterate over each enum value and retrieve its description
+            foreach (var value in parseLimitValues)
+            {
+                FieldInfo fieldInfo = value.GetType().GetField(value.ToString());
+                DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+                // If a description is found, add it to the list
+                if (attributes.Length > 0)
+                {
+                    descriptions.Add(attributes[0].Description);
+                }
+                else
+                {
+                    // If no description is found, use the enum name as the description
+                    descriptions.Add(value.ToString());
+                }
+            }
+
+            // Set the ItemsSource of the ComboBox to the descriptions
+            ParseComboBox.ItemsSource = descriptions;
         }
 
         /// <summary> Set the ParseLimit selection</summary>
         /// <param name="parseLimit">selected limit</param>
-        public void SetParseLimitSelection(MainWindow.ParseLimit parseLimit)
+        public void SetParseLimitSelection(MainWindow.ParseLimit limit)
         {
-            ParseComboBox.SelectedItem = parseLimit;
+            // Get the description corresponding to the enum value
+            string description = GetEnumDescription(limit);
+
+            // Set the selected item of the combo box to the description
+            ParseComboBox.SelectedItem = description;
         }
 
         /// <summary>Change event for the Parse limit combo box</summary>
@@ -114,13 +172,18 @@ namespace UniversalTelemetryReplay.Pages
         {
             if (ParseComboBox.SelectedItem != null)
             {
-                // Cast the selected item to MainWindow.ParseLimit enum type
-                if (Enum.TryParse(ParseComboBox.SelectedItem.ToString(), out MainWindow.ParseLimit selectedLimit))
+                // Get the selected description from the combo box
+                string selectedDescription = ParseComboBox.SelectedItem.ToString();
+
+                if(selectedDescription != null)
                 {
-                    if (MainWindow.settingsFile != null && 
+                    // Find the corresponding enum value based on the description
+                    MainWindow.ParseLimit selectedLimit = GetEnumValueFromDescription<MainWindow.ParseLimit>(selectedDescription);
+
+                    if (MainWindow.settingsFile != null &&
                         MainWindow.settingsFile.data != null &&
                         MainWindow.settingsFile.data.ParseLimit != selectedLimit
-                        ) 
+                        )
                     {
                         MainWindow.settingsFile.data.ParseLimit = selectedLimit;
                         MainWindow.settingsFile.Save();
@@ -129,5 +192,94 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        /// <summary>Populate the TimestampDeltaLimit combo box</summary>
+        private void PopulateTimestampDeltaLimitComboBox()
+        {
+            // Get all enum values from the TimestampDeltaLimit enum
+            var deltaLimitValues = Enum.GetValues(typeof(MainWindow.TimestampDeltaLimit));
+
+            // Create a list to hold the descriptions
+            var descriptions = new List<string>();
+
+            // Iterate over each enum value and retrieve its description
+            foreach (var value in deltaLimitValues)
+            {
+                FieldInfo fieldInfo = value.GetType().GetField(value.ToString());
+                DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+
+                // If a description is found, add it to the list
+                if (attributes.Length > 0)
+                {
+                    descriptions.Add(attributes[0].Description);
+                }
+                else
+                {
+                    // If no description is found, use the enum name as the description
+                    descriptions.Add(value.ToString());
+                }
+            }
+
+            // Set the ItemsSource of the ComboBox to the descriptions
+            TimestampComboBox.ItemsSource = descriptions;
+        }
+
+        /// <summary> Set the TimestampDeltaLimit selection</summary>
+        /// <param name="limit">selected limit</param>
+        public void SetTimestampDeltaLimitSelection(MainWindow.TimestampDeltaLimit limit)
+        {
+            // Get the description corresponding to the enum value
+            string description = GetEnumDescription(limit);
+
+            // Set the selected item of the combo box to the description
+            TimestampComboBox.SelectedItem = description;
+        }
+
+        /// <summary>Change event for the Timestamp combo box</summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TimestampComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (TimestampComboBox.SelectedItem != null)
+            {
+                // Get the selected description from the combo box
+                string selectedDescription = TimestampComboBox.SelectedItem.ToString();
+
+                // Find the corresponding enum value based on the description
+                MainWindow.TimestampDeltaLimit selectedLimit = GetEnumValueFromDescription<MainWindow.TimestampDeltaLimit>(selectedDescription);
+
+                // Update settings if necessary
+                if (MainWindow.settingsFile != null &&
+                    MainWindow.settingsFile.data != null &&
+                    MainWindow.settingsFile.data.TimestampDeltaLimit != selectedLimit)
+                {
+                    MainWindow.settingsFile.data.TimestampDeltaLimit = selectedLimit;
+                    MainWindow.settingsFile.Save();
+                }
+            }
+        }
+
+        // Helper method to get the description of an enum value
+        private static string GetEnumDescription(Enum value)
+        {
+            FieldInfo fieldInfo = value.GetType().GetField(value.ToString());
+            DescriptionAttribute[] attributes = (DescriptionAttribute[])fieldInfo.GetCustomAttributes(typeof(DescriptionAttribute), false);
+            return attributes.Length > 0 ? attributes[0].Description : value.ToString();
+        }
+
+        // Helper method to get the enum value from its description
+        private static T GetEnumValueFromDescription<T>(string description)
+        {
+            Array values = Enum.GetValues(typeof(T));
+            foreach (var value in values)
+            {
+                if (GetEnumDescription((Enum)value) == description)
+                {
+                    return (T)value;
+                }
+            }
+            throw new ArgumentException($"Enum value with description '{description}' not found.");
+        }
+
     }
+
 }
