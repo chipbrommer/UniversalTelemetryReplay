@@ -92,7 +92,25 @@ namespace UniversalTelemetryReplay.Pages
 
             if (MainWindow.configManager != null)
             {
-                if (index < 0) MainWindow.configManager.AddConfiguration(newConfiguration);
+                if (index < 0)
+                {   
+                    // Before adding, check if another config has the same characteristics
+                    foreach (MessageConfiguration config in MainWindow.configManager.GetData())
+                    {
+                        if (config.SyncByte1 == sync1 &&
+                           config.SyncByte2 == sync2 &&
+                           config.SyncByte3 == sync3 &&
+                           config.SyncByte4 == sync4 &&
+                           config.MessageSize == messageSize &&
+                           config.EndByte1 == end1 &&
+                           config.EndByte2 == end2)
+                        {
+                            MessageBox.Show($"Cannot add configuration, the input matches {config.Name}.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
+                    }
+                    MainWindow.configManager.AddConfiguration(newConfiguration);
+                }
                 else MainWindow.configManager.UpdateConfiguration(index, newConfiguration);
 
                 // Save the configurations to file
@@ -172,6 +190,19 @@ namespace UniversalTelemetryReplay.Pages
             }
         }
 
+        // Function to check if a string is a valid hexadecimal string
+        private static bool IsHex(string value)
+        {
+            foreach (char c in value)
+            {
+                if (!char.IsDigit(c) && !(c >= 'a' && c <= 'f') && !(c >= 'A' && c <= 'F'))
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
         public static byte ParseByte(string byteValue)
         {
@@ -186,6 +217,11 @@ namespace UniversalTelemetryReplay.Pages
             {
                 // Remove "0x" prefix and parse the remaining hexadecimal value
                 return byte.Parse(byteValue[2..], NumberStyles.HexNumber);
+            }
+            else if (IsHex(byteValue)) // Check if it's a valid hexadecimal string
+            {
+                // Parse the hexadecimal value
+                return byte.Parse(byteValue, NumberStyles.HexNumber);
             }
             else
             {

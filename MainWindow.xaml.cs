@@ -824,11 +824,11 @@ namespace UniversalTelemetryReplay
         private void StartReplay()
         {
             // Start the replay thread
-            replayThread = new(StartReplayWorker);
+            replayThread = new(ReplayWorker);
             replayThread.Start();
         }
 
-        private void StartReplayWorker()
+        private void ReplayWorker()
         {
             UdpClient udp = new() { EnableBroadcast = true };
             List<IPEndPoint> logEndpoints = [];
