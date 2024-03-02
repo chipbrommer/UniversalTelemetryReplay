@@ -38,7 +38,6 @@
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
-                                        <!--<ColumnDefinition Width="Auto" />-->
                                         <ColumnDefinition Width="*" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
@@ -139,7 +138,7 @@
                                     </StackPanel>
 
                                     <!-- Buttons -->
-                                    <StackPanel Grid.Column="3" HorizontalAlignment="Center">
+                                    <StackPanel Grid.Column="2" HorizontalAlignment="Center">
                                         <Button x:Name="BrowseButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Top"
                                             HorizontalAlignment="Center" Width="100" Height="25" Margin="5" Content="Browse" Click="LogBrowse_Click"/>
                                         <Button x:Name="UpdateButton" Style="{DynamicResource ModernButton}" Background="{DynamicResource ButtonDefaultColor}" VerticalAlignment="Center"
@@ -157,7 +156,8 @@
 
         <!-- Bottom Grid: Add Replay Item -->
         <Grid Grid.Row="2">
-            <Button x:Name="AddLogItemButton" Content="Add Log to Replay" Click="AddLogItem_Click" />
+            <Button x:Name="AddLogItemButton" Style="{DynamicResource ModernButton}" VerticalContentAlignment="Center" Height="25" Width="400"
+                    Content="Add Log to Replay" Click="AddLogItem_Click" Margin="0,5,0,0"/>
         </Grid>
     </Grid>
 </Page>

@@ -81,9 +81,10 @@
                         </Grid>
 
                         <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
-                            <TextBlock x:Name="PlaybackTextTitle" Text="Current Timestamp: " Background="Transparent" Foreground="{DynamicResource TextPrimaryColor}"/>
-                            <TextBlock x:Name="CurrentPlaybackText" Width="100" Background="Transparent" TextAlignment="Center"
-                                           Foreground="{DynamicResource TextPrimaryColor}" Text="{Binding ElementName=ReplaySlider, Path=Value, StringFormat={}{0:F2}}"/>
+                            <TextBlock x:Name="PlaybackTextTitle" Text="Current Timestamp: " Background="Transparent" 
+                                       Foreground="{DynamicResource TextPrimaryColor}" Visibility="Hidden"/>
+                            <TextBlock x:Name="CurrentPlaybackText" Width="100" Background="Transparent" TextAlignment="Right" Visibility="Hidden"
+                                Foreground="{DynamicResource TextPrimaryColor}" Text="{Binding ElementName=ReplaySlider, Path=Value, StringFormat={}{0:F2}}"/>
                         </StackPanel>
                         
                         <Grid Grid.Row="2">

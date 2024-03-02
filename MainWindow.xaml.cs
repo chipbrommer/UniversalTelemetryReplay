@@ -323,6 +323,9 @@ namespace UniversalTelemetryReplay
                                         log.Locked = true;
                                     }
                                 }
+
+                                PlaybackTextTitle.Visibility = Visibility.Visible;
+                                CurrentPlaybackText.Visibility = Visibility.Visible;
                             });
                         }
                         else if(replayView.logItems.Count == 0)
@@ -398,6 +401,8 @@ namespace UniversalTelemetryReplay
                     endTime = 0;
                     ReplaySlider.Value = 0;
                     LogLinesCanvas.Children.Clear();
+                    PlaybackTextTitle.Visibility = Visibility.Hidden;
+                    CurrentPlaybackText.Visibility = Visibility.Hidden;
 
                     if(settingsFile != null && settingsFile.data != null && !settingsFile.data.ConcurrentPlaybackEnabled) 
                     {
