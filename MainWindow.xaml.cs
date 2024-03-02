@@ -187,12 +187,36 @@ namespace UniversalTelemetryReplay
             windowSettings = new SettingsFile<WindowInformation>(windowFilePath);
             windowSettings?.Load();
 
-            if(windowSettings?.data != null) 
+            if (windowSettings?.data != null)
             {
-                Height = windowSettings.data.Height;
-                Width = windowSettings.data.Width;
-                Top = windowSettings.data.Top;
-                Left = windowSettings.data.Left;
+                // Validate and set Height
+                if (windowSettings.data.Height > SystemParameters.WorkArea.Height)
+                    Height = SystemParameters.WorkArea.Height;
+                else
+                    Height = windowSettings.data.Height;
+
+                // Validate and set Width
+                if (windowSettings.data.Width > SystemParameters.WorkArea.Width)
+                    Width = SystemParameters.WorkArea.Width;
+                else
+                    Width = windowSettings.data.Width;
+
+                // Validate and set Top
+                if (windowSettings.data.Top + Height > SystemParameters.WorkArea.Height)
+                    Top = SystemParameters.WorkArea.Height - Height;
+                else if (windowSettings.data.Top < SystemParameters.WorkArea.Top)
+                    Top = SystemParameters.WorkArea.Top;
+                else
+                    Top = windowSettings.data.Top;
+
+                // Validate and set Left
+                if (windowSettings.data.Left + Width > SystemParameters.WorkArea.Width)
+                    Left = SystemParameters.WorkArea.Width - Width;
+                else if (windowSettings.data.Left < SystemParameters.WorkArea.Left)
+                    Left = SystemParameters.WorkArea.Left;
+                else
+                    Left = windowSettings.data.Left;
+
                 WindowState = windowSettings.data.IsFullscreen ? WindowState.Maximized : WindowState.Normal;
             }
 
@@ -315,6 +339,7 @@ namespace UniversalTelemetryReplay
                                 UpdateReplayContent();
 
                                 replayView.UpdateAddButton(true);
+                                CurrentStatus.Visibility = Visibility.Visible;
 
                                 foreach (LogItem log in replayView.logItems)
                                 {
@@ -323,9 +348,6 @@ namespace UniversalTelemetryReplay
                                         log.Locked = true;
                                     }
                                 }
-
-                                PlaybackTextTitle.Visibility = Visibility.Visible;
-                                CurrentPlaybackText.Visibility = Visibility.Visible;
                             });
                         }
                         else if(replayView.logItems.Count == 0)
@@ -401,8 +423,7 @@ namespace UniversalTelemetryReplay
                     endTime = 0;
                     ReplaySlider.Value = 0;
                     LogLinesCanvas.Children.Clear();
-                    PlaybackTextTitle.Visibility = Visibility.Hidden;
-                    CurrentPlaybackText.Visibility = Visibility.Hidden;
+                    CurrentStatus.Visibility = Visibility.Hidden;
 
                     if(settingsFile != null && settingsFile.data != null && !settingsFile.data.ConcurrentPlaybackEnabled) 
                     {
@@ -545,6 +566,8 @@ namespace UniversalTelemetryReplay
                 if (log.ReadyForReplay) 
                 { 
                     success++;
+                    int index = replayView.logItems.IndexOf(log);
+                    log.TotalPackets = tmMessages[index].Count;
                     UpdateLogStatus(LogStatus.Found, log);
                     continue; 
                 }

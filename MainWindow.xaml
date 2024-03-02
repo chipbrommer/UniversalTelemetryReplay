@@ -54,7 +54,7 @@
                 <Border Grid.Row="2" CornerRadius="10" Margin="5" Visibility="Visible" Background="{DynamicResource SecondaryBackgroundColor}">
                     <Grid x:Name="ControlsGrid" Visibility="Visible">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" MinHeight="80"/>
+                            <RowDefinition Height="*" MinHeight="80"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
@@ -80,13 +80,18 @@
                                 TextAlignment="Center" Margin="5,0,5,15" Width="70" Foreground="{DynamicResource TextSecondaryColor}"/>
                         </Grid>
 
-                        <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
-                            <TextBlock x:Name="PlaybackTextTitle" Text="Current Timestamp: " Background="Transparent" 
-                                       Foreground="{DynamicResource TextPrimaryColor}" Visibility="Hidden"/>
-                            <TextBlock x:Name="CurrentPlaybackText" Width="100" Background="Transparent" TextAlignment="Right" Visibility="Hidden"
-                                Foreground="{DynamicResource TextPrimaryColor}" Text="{Binding ElementName=ReplaySlider, Path=Value, StringFormat={}{0:F2}}"/>
+                        <StackPanel Grid.Row="1" x:Name="CurrentStatus" HorizontalAlignment="Center" Visibility="Hidden">
+                            <Border BorderThickness="1" BorderBrush="{DynamicResource ButtonDefaultColor}" CornerRadius="5">
+                                <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                                    <TextBlock Text="Current Timestamp: " Background="Transparent" 
+                                               Margin="5,2,0,2" Foreground="{DynamicResource TextSecondaryColor}"/>
+                                    <TextBlock Width="90" Background="Transparent" TextAlignment="Right" 
+                                               Margin="0,2,5,2" Foreground="{DynamicResource TextSecondaryColor}" 
+                                               Text="{Binding ElementName=ReplaySlider, Path=Value, StringFormat={}{0:F2}}"/>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
-                        
+
                         <Grid Grid.Row="2">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
