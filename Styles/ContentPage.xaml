@@ -2,9 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Common style for content pages -->
     <Style x:Key="ContentPageStyle" TargetType="Page">
-        <!--<Setter Property="Height" Value="400"/>-->
-        <Setter Property="MinHeight" Value="300"/>
-        <!--<Setter Property="Width" Value="750"/>-->
+        <Setter Property="MinHeight" Value="280"/>
         <Setter Property="MinWidth" Value="500"/>
         <Setter Property="Background" Value="{DynamicResource SecondaryBackgroundColor}"/>
     </Style>
