@@ -30,7 +30,10 @@
 
         <!-- Middle Grid: Add Replay Item -->
         <Grid Grid.Row="1">
-            <ScrollViewer>
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <ScrollViewer.Resources>
+                    <Style TargetType="ScrollBar" BasedOn="{StaticResource ModernScrollBar}"/>
+                </ScrollViewer.Resources>
                 <ItemsControl ItemsSource="{Binding}">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
@@ -156,8 +159,8 @@
 
         <!-- Bottom Grid: Add Replay Item -->
         <Grid Grid.Row="2">
-            <Button x:Name="AddLogItemButton" Style="{DynamicResource ModernButton}" VerticalContentAlignment="Center" Height="25" Width="400"
-                    Content="Add Log to Replay" Click="AddLogItem_Click" Margin="0,5,0,0"/>
+            <Button x:Name="AddLogItemButton" Style="{DynamicResource ModernButton}" VerticalContentAlignment="Center" Height="25"
+                    Content="Add Log to Replay" Click="AddLogItem_Click" Margin="30,5,30,0"/>
         </Grid>
     </Grid>
 </Page>
