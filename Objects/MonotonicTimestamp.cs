@@ -52,5 +52,67 @@ namespace UniversalTelemetryReplay.Objects
 
             return new TimeSpan((long)((double)(to.timestamp - from.timestamp) * tickFrequency));
         }
+
+        public static bool operator ==(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return left.timestamp == right.timestamp;
+        }
+
+        public static bool operator !=(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return !(left == right);
+        }
+
+        public static bool operator <(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return left.timestamp < right.timestamp;
+        }
+
+        public static bool operator >(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return left.timestamp > right.timestamp;
+        }
+
+        public static bool operator <=(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return left.timestamp <= right.timestamp;
+        }
+
+        public static bool operator >=(MonotonicTimestamp left, MonotonicTimestamp right)
+        {
+            return left.timestamp >= right.timestamp;
+        }
+
+        public static MonotonicTimestamp operator +(MonotonicTimestamp timestamp, TimeSpan span)
+        {
+            long ticks = (long)(span.Ticks / tickFrequency);
+            return new MonotonicTimestamp(timestamp.timestamp + ticks);
+        }
+
+        public static MonotonicTimestamp operator -(MonotonicTimestamp timestamp, TimeSpan span)
+        {
+            long ticks = (long)(span.Ticks / tickFrequency);
+            return new MonotonicTimestamp(timestamp.timestamp - ticks);
+        }
+
+        public double ToSeconds()
+        {
+            return timestamp * tickFrequency;
+        }
+
+        public double ToMilliseconds()
+        {
+            return timestamp * (tickFrequency / 1000.0);
+        }
+
+        public double ToMicroseconds()
+        {
+            return timestamp * (tickFrequency / 1000000.0);
+        }
+
+        public double ToNanoseconds()
+        {
+            return timestamp * (tickFrequency / 1000000000.0);
+        }
     }
 }

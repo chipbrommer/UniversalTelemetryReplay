@@ -339,7 +339,15 @@ namespace UniversalTelemetryReplay
                                 UpdateReplayContent();
 
                                 replayView.UpdateAddButton(true);
-                                CurrentStatus.Visibility = Visibility.Visible;
+
+                                // Since the slider is latched to the timestamp of the logs, 
+                                // if we are a concurrent playback, do not show the current status. 
+                                if( settingsFile != null &&
+                                    settingsFile.data != null &&
+                                    !settingsFile.data.ConcurrentPlaybackEnabled)
+                                {
+                                    CurrentStatus.Visibility = Visibility.Visible;
+                                }
 
                                 foreach (LogItem log in replayView.logItems)
                                 {

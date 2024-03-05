@@ -109,6 +109,9 @@ namespace UniversalTelemetryReplay.Pages
                             return;
                         }
                     }
+
+                    // Set the actual row index and add new item. 
+                    newConfiguration.RowIndex = MainWindow.configManager.GetNextConfigurationIndex();
                     MainWindow.configManager.AddConfiguration(newConfiguration);
                 }
                 else MainWindow.configManager.UpdateConfiguration(index, newConfiguration);

@@ -87,6 +87,11 @@ namespace UniversalTelemetryReplay.Objects
             return configurations;
         }
 
+        public int GetNextConfigurationIndex()
+        {
+            return configurations.Count;
+        }
+
         public void AddConfiguration(T configuration)
         {
             configurations.Add(configuration);
