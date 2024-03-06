@@ -44,8 +44,8 @@ namespace UniversalTelemetryReplay
 
         /// Threads
         Thread replayThread;
-        private ManualResetEvent stopSignal = new(false);
-        private ManualResetEvent pauseSignal = new(false);
+        private ManualResetEvent stopSignal;
+        private ManualResetEvent pauseSignal;
 
         public enum View
         {
@@ -156,6 +156,10 @@ namespace UniversalTelemetryReplay
             replayView = new(this);
             settingsView = new();
 
+            replayThread = new(ReplayWorker);
+            stopSignal = new(false);
+            pauseSignal = new(false);
+
             // Get the version information of the assembly
             Assembly assembly = Assembly.GetExecutingAssembly();
             AssemblyName assemblyName = assembly.GetName();
@@ -262,11 +266,9 @@ namespace UniversalTelemetryReplay
                 windowSettings.Save();
             }
 
-            // Make sure any temporary files are deleted
-            foreach (string filePath in copiedFiles)
-            {
-                if (File.Exists(filePath)) File.Delete(filePath);
-            }
+            // Make sure we kill the replay thread if its running. 
+            stopSignal.Set();
+            // if (replayThread.IsAlive) replayThread.Join();
         }
 
         /// <summary>Changes the view content</summary>
@@ -347,6 +349,10 @@ namespace UniversalTelemetryReplay
                                     !settingsFile.data.ConcurrentPlaybackEnabled)
                                 {
                                     CurrentStatus.Visibility = Visibility.Visible;
+                                }
+                                else
+                                {
+                                    CurrentStatus.Visibility = Visibility.Hidden;
                                 }
 
                                 foreach (LogItem log in replayView.logItems)
@@ -456,6 +462,10 @@ namespace UniversalTelemetryReplay
                 if (sender is ModernToggleButton toggleButton && settingsFile != null && settingsFile.data != null)
                 {
                     settingsFile.data.ConcurrentPlaybackEnabled = toggleButton.IsChecked ?? false;
+
+                    if (!settingsFile.data.ConcurrentPlaybackEnabled) CurrentStatus.Visibility = Visibility.Visible;
+                    else CurrentStatus.Visibility = Visibility.Hidden;
+
                     settingsFile.Save();
                     UpdateReplayContent();
                 }
@@ -900,8 +910,8 @@ namespace UniversalTelemetryReplay
             UdpClient udp = new() { EnableBroadcast = true };
             List<IPEndPoint> logEndpoints = [];
             List<FileStream> logFileStreams = [];
-            List<MonotonicTimestamp> logLastSentTime = [];
             List<double> logReplayTime = [];
+            MonotonicTimestamp lastSentTime = MonotonicTimestamp.Now();
 
             // Keep track of the longest log for concurrent replay type
             LogItem longestLog = new();
@@ -929,7 +939,6 @@ namespace UniversalTelemetryReplay
                     File.Copy(log.FilePath, tempPath, true);
 
                     logFileStreams.Add(File.Open(tempPath, FileMode.Open));
-                    logLastSentTime.Add(MonotonicTimestamp.Now());
                     logReplayTime.Add(log.StartTime);
 
                     // Capture the longestLog 
@@ -960,8 +969,6 @@ namespace UniversalTelemetryReplay
                     // if slider was moved, update the items appropriately
                     if(sliderMoved)
                     {
-                        MonotonicTimestamp n = MonotonicTimestamp.Now();
-
                         foreach (LogItem log in replayView.logItems)
                         {
                             int logIndex = replayView.logItems.IndexOf(log);
@@ -990,8 +997,6 @@ namespace UniversalTelemetryReplay
                                 if (log.ReplayedPackets == log.TotalPackets) UpdateLogStatus(LogStatus.Finished, log);
                                 else UpdateLogStatus(LogStatus.Playing, log);
                             });
-
-                            logLastSentTime[logIndex] = n;
                         }
 
                         sliderMoved = false;
@@ -1015,15 +1020,16 @@ namespace UniversalTelemetryReplay
                             // Based on the replay type, handle the replay time. 
                             if (settingsFile != null && settingsFile.data != null && settingsFile.data.ConcurrentPlaybackEnabled)
                             {
-                                logReplayTime[logIndex] += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
+                                logReplayTime[logIndex] += (now - lastSentTime).TotalSeconds * playbackSpeed;
                                 adjustedTime = logReplayTime[logIndex];
                             }
                             else 
                             {
-                                replayTime += (now - logLastSentTime[logIndex]).TotalSeconds * playbackSpeed;
+                                replayTime += (now - lastSentTime).TotalSeconds * playbackSpeed;
                                 adjustedTime = replayTime;
                             }
-                            logLastSentTime[logIndex] = now;
+
+                            lastSentTime = now;
 
                             // Get the config and make sure it's not null
                             MessageConfiguration config = configManager.GetData()[replayView.logItems[logIndex].ConfigIndex];
