@@ -17,12 +17,13 @@
 
         <!-- Top Grid: Title -->
         <Grid Grid.Row="0">
-            <TextBlock Style="{DynamicResource ViewTitleTextBlock}" Text="Configutations"/>
+            <TextBlock Style="{DynamicResource ViewTitleTextBlock}" Text="Configurations"/>
         </Grid>
 
         <!-- Middle Grid: Data Table Style View -->
         <DataGrid x:Name="ConfigurationsDataGrid" Grid.Row="1" AutoGenerateColumns="False" 
-                  SelectionChanged="ConfigurationsDataGrid_SelectionChanged" IsReadOnly="True">
+                  SelectionChanged="ConfigurationsDataGrid_SelectionChanged" IsReadOnly="True"
+                  Background="{DynamicResource DataGridBackgroundColor}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="#" Binding="{Binding RowIndex}" Width="Auto"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>

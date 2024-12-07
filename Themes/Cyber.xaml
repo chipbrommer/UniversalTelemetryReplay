@@ -3,6 +3,7 @@
     <!-- Background Colors -->
     <SolidColorBrush x:Key="PrimaryBackgroundColor" Color="#171717"/>
     <SolidColorBrush x:Key="SecondaryBackgroundColor" Color="#292929"/>
+    <SolidColorBrush x:Key="DataGridBackgroundColor" Color="#808080"/>
 
     <!-- Primary Colors -->
     <SolidColorBrush x:Key="PrimaryBlueColor" Color="#00FFFF"/>
